@@ -1,0 +1,40 @@
+body {
+    background-color: #000000;
+    text-color: 
+}
+
+* {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.canvas {
+    display: inline-block;
+}
+
+.controls {
+    display: inline-block;
+
+}
+
+.column {
+    display: table-cell;
+    vertical-align: top;
+}
+
+.colorCol {
+    display: table-cell;
+}
+
+#newShape {
+    border-radius: 25px;
+    background: #00CCCC;
+    padding: 20px; 
+    width: 220px;
+    height: 150px;
+}
+
+.sliders {
+    vertical-align: bottom;
+
+
+}
