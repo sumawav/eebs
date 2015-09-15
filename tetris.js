@@ -1,3 +1,8 @@
+//SOUMA 
+//tetris.js
+//an implementation of tetris in javascript
+
+
 var canvas = document.getElementById("gl-canvas");
 var ctx = canvas.getContext("2d");
 
@@ -6,11 +11,17 @@ var WIDTH = canvas.width;
 var BLOCK = HEIGHT/20;
 var GRID = [];
 
+var pieceLock = false;
+
 // buttons
 var rightPressed = false;
 var leftPressed = false;
+var upPressed = false;
+var downPressed = false;
 var rightHeld = false;
 var leftHeld = false;
+var upHeld = false;
+var downHeld = false;
 
 // event listeners
 document.addEventListener("keydown", keyDownHandler, false);
@@ -21,7 +32,7 @@ document.addEventListener("keyup", keyUpHandler, false);
 for (var r=0; r<10; ++r) {
     GRID[r] = [];
     for (var c=0; c<20; ++c) {
-        GRID[r][c] = { status: 0 };
+        GRID[r][c] = { status: false };
     } 
 }
 
@@ -35,6 +46,14 @@ function keyDownHandler(e) {
         leftPressed = true;
         console.log("LEFT");
     }
+    else if(e.keyCode == 38) {
+        upPressed = true;
+        console.log("UP");
+    }
+    else if(e.keyCode == 40) {
+        downPressed = true;
+        console.log("DOWN");
+    }    
 }
 
 // key up handler
@@ -45,9 +64,15 @@ function keyUpHandler(e) {
     else if(e.keyCode == 37) {
         leftPressed = false;
     }
+    else if(e.keyCode == 38) {
+        upPressed = false;
+    }
+    else if(e.keyCode == 40) {
+        downPressed = false;
+    } 
 }
 
-//draws a block
+// draws a block
 function drawBlock (r, c) {
     var x = r * BLOCK;
     var y = c * BLOCK;
@@ -66,6 +91,7 @@ function drawBlock (r, c) {
 
 }
 
+// draws walls for playing field
 function drawWalls () {
     for (var r = 4; r < 16; r=r+11) {
         for (var c = 0; c < 20; ++c)
@@ -73,6 +99,7 @@ function drawWalls () {
     }
 }
 
+// draws all block in GRID
 function drawGrid () {
     for (var r=0; r < 10; ++r) {
         for (var c=0; c < 20; ++c) {
@@ -82,38 +109,67 @@ function drawGrid () {
     }
 }
 
+// sets a block in GRID
 function setGrid (r, c) {
-    GRID[r][c].status = 1;
+    GRID[r][c].status = true;
 }
 
+// clears a block in GRID
+function clearGrid (r, c) {
+    GRID[r][c].status = false;
+}
+
+// returns status of block in GRID
+function getGrid (r, c) {
+    return GRID[r][c].status;
+}
+
+// single piece object
 function Piece (x, y, type) {
     this.x = x,
     this.y = y,
     this.type = type,
     
-    this.drop = function() {
-        ++this.x;
+    this.drop = function() {  
+        if (this.checkDown()) {
+            clearGrid(this.x, this.y);
+            ++this.y;
+            console.log("x: "+this.x);
+            console.log("y: "+this.y);   
+        } else {
+            pieceLock = true;
+        
+        }
     },
     
     this.left = function() {
-        console.log("x: "+this.x);
-        console.log("y: "+this.y);
+        clearGrid(this.x, this.y);
         --this.x;
     },
 
     this.right = function() {
-        console.log("x: "+this.x);
-        console.log("y: "+this.y);
+        clearGrid(this.x, this.y);
         ++this.x;
+    },
+    
+    this.up = function() {
+        clearGrid(this.x, this.y);
+        --this.y;
     },
     
     this.draw = function() {
         setGrid(this.x, this.y);
     }
     
+    this.checkDown = function() {
+        if (this.y === 19)
+            return false;
+        if ( getGrid(this.x, this.y+1) )
+            return false;
+        return true;
+    }
+    
 }
-
-
 
 function draw () {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -138,6 +194,31 @@ function draw () {
     } else {
         leftHeld = false;
     } 
+    if (upPressed) {
+        if (!upHeld) {
+            piece.up();
+            upHeld = true;
+        }
+    } else {
+        upHeld = false;
+    }
+    if (downPressed) {
+    //    if (!downHeld) {
+            piece.drop();
+            downHeld = true;
+      //  }
+    } else {
+        downHeld = false;
+    }
+    
+    if (pieceLock) {
+        pieceLock = false;
+        piece.x = Math.floor(Math.random()*10);
+        console.log(piece.x);
+        piece.y = 0;
+        piece.draw();
+    
+    }
 
 
     requestAnimationFrame(draw);
@@ -145,7 +226,8 @@ function draw () {
 
 
 var piece = new Piece(5, 5, 0);
-setGrid(3,3);
+
+
 setGrid(9, 19);
 setGrid(8, 19);
 setGrid(9, 18);
