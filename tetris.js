@@ -6,12 +6,45 @@ var WIDTH = canvas.width;
 var BLOCK = HEIGHT/20;
 var GRID = [];
 
+// buttons
+var rightPressed = false;
+var leftPressed = false;
+var rightHeld = false;
+var leftHeld = false;
+
+// event listeners
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+//document.addEventListener("mousemove", mouseMoveHandler, false);
+
 //init GRID
 for (var r=0; r<10; ++r) {
     GRID[r] = [];
     for (var c=0; c<20; ++c) {
         GRID[r][c] = { status: 0 };
     } 
+}
+
+// key down handler
+function keyDownHandler(e) {
+    if(e.keyCode == 39) {
+        rightPressed = true;
+        console.log("RIGHT");
+    }
+    else if(e.keyCode == 37) {
+        leftPressed = true;
+        console.log("LEFT");
+    }
+}
+
+// key up handler
+function keyUpHandler(e) {
+    if(e.keyCode == 39) {
+        rightPressed = false;
+    }
+    else if(e.keyCode == 37) {
+        leftPressed = false;
+    }
 }
 
 //draws a block
@@ -53,34 +86,73 @@ function setGrid (r, c) {
     GRID[r][c].status = 1;
 }
 
-function Piece () {
-    this.x = 0,
-    this.y = 0,
+function Piece (x, y, type) {
+    this.x = x,
+    this.y = y,
+    this.type = type,
     
     this.drop = function() {
-        ++x;
+        ++this.x;
     },
     
     this.left = function() {
-        --y;
+        console.log("x: "+this.x);
+        console.log("y: "+this.y);
+        --this.x;
     },
 
     this.right = function() {
-        ++y;
+        console.log("x: "+this.x);
+        console.log("y: "+this.y);
+        ++this.x;
+    },
+    
+    this.draw = function() {
+        setGrid(this.x, this.y);
     }
+    
 }
 
 
-drawWalls();
 
+function draw () {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawWalls();
+    piece.draw();
+    drawGrid();
+
+    //move piece
+    if (rightPressed) {
+        if (!rightHeld) {
+            piece.right();
+            rightHeld = true;
+        }
+    } else {
+        rightHeld = false;
+    }
+    if (leftPressed) {
+        if (!leftHeld) {
+            piece.left();
+            leftHeld = true;
+        }
+    } else {
+        leftHeld = false;
+    } 
+
+
+    requestAnimationFrame(draw);
+}
+
+
+var piece = new Piece(5, 5, 0);
 setGrid(3,3);
 setGrid(9, 19);
 setGrid(8, 19);
 setGrid(9, 18);
 
+draw();
 
 
-drawGrid();
 
 
 
