@@ -124,6 +124,47 @@ function getGrid (r, c) {
     return GRID[r][c].status;
 }
 
+// returns y indices of filled lines
+function checkGridLines () {
+    var out = [];
+    var notFilled = false;
+    for (var c=0; c < 20; ++c) {
+        notFilled = false;
+        for (var r=0; r < 10; ++r) {
+            if ( !(GRID[r][c].status) )
+                notFilled = true;
+        }
+        if (!notFilled)
+            out.push(c);
+    }
+    
+    return out;
+
+}
+
+// clears a line from GRID
+function clearLine(y) {
+    for (var r=0; r < 10; ++r) {
+        GRID[r][y].status = false;
+    }
+
+}
+
+// moves all pieces down after line clears
+function moveDown(y) {
+    console.log("moveDown");
+    --y;
+    for (var c=y; c>=0; --c) {
+        for (var r=0; r < 10; ++r) {
+            if (GRID[r][c].status) {
+                GRID[r][c].status = false;
+                GRID[r][c+1].status = true;
+            }
+        }
+    } 
+
+}
+
 // single piece object
 function Piece (x, y, type) {
     this.x = x,
@@ -134,8 +175,6 @@ function Piece (x, y, type) {
         if (this.checkDown()) {
             clearGrid(this.x, this.y);
             ++this.y;
-            console.log("x: "+this.x);
-            console.log("y: "+this.y);   
         } else {
             pieceLock = true;
         
@@ -143,13 +182,17 @@ function Piece (x, y, type) {
     },
     
     this.left = function() {
-        clearGrid(this.x, this.y);
-        --this.x;
+        if (this.checkLeft()) {
+            clearGrid(this.x, this.y);
+            --this.x;
+        }
     },
 
     this.right = function() {
-        clearGrid(this.x, this.y);
-        ++this.x;
+        if (this.checkRight()) {
+            clearGrid(this.x, this.y);
+            ++this.x;
+        }
     },
     
     this.up = function() {
@@ -159,7 +202,7 @@ function Piece (x, y, type) {
     
     this.draw = function() {
         setGrid(this.x, this.y);
-    }
+    },
     
     this.checkDown = function() {
         if (this.y === 19)
@@ -167,7 +210,23 @@ function Piece (x, y, type) {
         if ( getGrid(this.x, this.y+1) )
             return false;
         return true;
-    }
+    },
+    
+    this.checkRight = function() {
+        if (this.x === 9)
+            return false;
+        if ( getGrid(this.x+1, this.y) )
+            return false;
+        return true;
+    },
+    
+    this.checkLeft = function() {
+        if (this.x === 0)
+            return false;
+        if ( getGrid(this.x-1, this.y) )
+            return false;
+        return true;
+    }    
     
 }
 
@@ -212,9 +271,18 @@ function draw () {
     }
     
     if (pieceLock) {
+        
+        var toClear = [];
+        toClear = checkGridLines();
+        //console.log(toClear);
+        for (var i = 0; i < toClear.length; ++i) {
+            clearLine(toClear[i]);
+            moveDown(toClear[i]);
+        }
+    
+    
         pieceLock = false;
         piece.x = Math.floor(Math.random()*10);
-        console.log(piece.x);
         piece.y = 0;
         piece.draw();
     
@@ -225,12 +293,14 @@ function draw () {
 }
 
 
-var piece = new Piece(5, 5, 0);
+var piece = new Piece(9, 5, 0);
 
-
-setGrid(9, 19);
-setGrid(8, 19);
-setGrid(9, 18);
+for (var i=0; i < 9; ++i) {
+    setGrid(i, 19);
+}
+for (var i=0; i < 9; ++i) {
+    setGrid(i, 18);
+}
 
 draw();
 
