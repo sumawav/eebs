@@ -241,32 +241,58 @@ function getPieceGrid (type, orientation) {
         return grid;
     
     }
-    if (type === 0){
+    if (type === 2){
         switch (orientation) {
             case 0:
-                grid = [[0, 1, 1],  // OOO
+                grid = [[0, 1, 0],  // OOO
                         [0, 1, 0],  // XXX
-                        [0, 1, 0]]; // XOO
+                        [0, 1, 1]]; // OOX
                 break;
             case 1:
-                grid = [[1, 0, 0],  // XXO
+                grid = [[0, 0, 1],  // OXO
                         [1, 1, 1],  // OXO
-                        [0, 0, 0]]; // OXO
+                        [0, 0, 0]]; // XXO
                 break;
             case 2:
-                grid = [[0, 0, 1],  // OOO
-                        [0, 0, 1],  // OOX
-                        [0, 1, 1]]; // XXX
+                grid = [[0, 1, 1],  // OOO
+                        [0, 0, 1],  // XOO
+                        [0, 0, 1]]; // XXX
                 break;
             case 3:
-                grid = [[0, 0, 0],  // OXO
+                grid = [[0, 0, 0],  // OXX
                         [1, 1, 1],  // OXO
-                        [0, 0, 1]]; // OXX
+                        [1, 0, 0]]; // OXO
                 break;
             default:                                             
         }
         return grid;
-    }    
+    }  
+    if (type === 3){
+        switch (orientation) {
+            case 0:
+                grid = [[0, 1, 0],  // OOO
+                        [0, 1, 1],  // XXX
+                        [0, 1, 0]]; // OXO
+                break;
+            case 1:
+                grid = [[0, 1, 0],  // OXO
+                        [1, 1, 1],  // XXO
+                        [0, 0, 0]]; // OXO
+                break;
+            case 2:
+                grid = [[0, 0, 1],  // OOO
+                        [0, 1, 1],  // OXO
+                        [0, 0, 1]]; // XXX
+                break;
+            case 3:
+                grid = [[0, 0, 0],  // OXO
+                        [1, 1, 1],  // OXX
+                        [0, 1, 0]]; // OXO
+                break;
+            default:                                             
+        }
+        return grid;
+    }      
 }
 
 // returns the number of orientations for a given type
@@ -276,6 +302,10 @@ function getOrientationNum(type) {
             return 4;
         case 1:
             return 2;
+        case 2:
+            return 4;  
+        case 3:
+            return 4;  
         default:
             return 0;
     }
@@ -302,7 +332,7 @@ function Piece (x, y, type, orientation) {
     this.spawn = function () {
         this.x = 3;
         this.y = -1
-        this.type = Math.floor(Math.random()*2);
+        this.type = Math.floor(Math.random()*4);
         this.orientation = 0;
         this.pieceGrid = getPieceGrid(this.type, this.orientation); 
         this.pieceGridLen = this.pieceGrid[0].length;        
@@ -461,6 +491,8 @@ function Piece (x, y, type, orientation) {
     
     this.checkRotation = function(direction) {
         var ori = this.orientation;
+        console.log(ori);
+        console.log(this.oriNum);
         var nextGrid = [];         
         if (direction === false) {  
             ori = ++ori % this.oriNum;    //cycles through 0..this.oriNum
@@ -469,8 +501,10 @@ function Piece (x, y, type, orientation) {
             --ori;       
             if (ori < 0) ori = this.oriNum-1;
         }
+        console.log(ori);
         nextGrid = getPieceGrid(this.type, ori);
-        console.log(this.type);
+
+
         
         for (var r=0; r < this.pieceGridLen; ++r) {
             for (var c=0; c < this.pieceGridLen; ++c) {
@@ -494,7 +528,9 @@ function draw () {
     piece.draw();
     drawGrid();
 
-    //move piece
+    // controls
+    
+    // keyboard right
     if (rightPressed) {
         if (!rightHeld) {
             piece.right();
@@ -503,6 +539,7 @@ function draw () {
     } else {
         rightHeld = false;
     }
+    // keyboard left
     if (leftPressed) {
         if (!leftHeld) {
             piece.left();
@@ -511,14 +548,16 @@ function draw () {
     } else {
         leftHeld = false;
     } 
-    if (upPressed) {
+    // keyboard up (up)
+    /*if (upPressed) {
         if (!upHeld) {
             piece.up();
             upHeld = true;
         }
     } else {
         upHeld = false;
-    }
+    }*/
+    // keyboard down
     if (downPressed) {
         if (!downHeld) {
             piece.drop();
@@ -527,14 +566,14 @@ function draw () {
     } else {
         downHeld = false;
     }
+    // keyboard up (fast drop)
     if (upPressed) {
-        //if (!downHeld) {
             piece.drop();
             upHeld = true;
-        //}
     } else {
         upHeld = false;
-    }    
+    } 
+    // Z key   
     if (rotLeftPressed) {
         if (!rotLeftHeld) {
             piece.rotateCCW();
@@ -543,6 +582,7 @@ function draw () {
     } else {
         rotLeftHeld = false;
     }
+    // X key
     if (rotRightPressed) {
         if (!rotRightHeld) {
             piece.rotateCW();
@@ -552,6 +592,7 @@ function draw () {
         rotRightHeld = false;
     }    
     
+    // pieceLock
     if (pieceLock) {
         var toClear = [];
         toClear = checkGridLines();
@@ -568,7 +609,7 @@ function draw () {
 }
 
 
-var piece = new Piece(0, -1, Math.floor(Math.random()*2), 0);
+var piece = new Piece(0, -1, 3, 0);
 
 //setGrid(5, 10);
 
