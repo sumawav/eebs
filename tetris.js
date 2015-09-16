@@ -363,37 +363,50 @@ function Piece (x, y, type, orientation) {
         this.clearGrid(this.x, this.y);
         --this.y;
     },
-    
-    this.checkDown = function() {        
-        for (var i=0; i < this.bounds.bottomBound[0].length; ++i) {
-                if ( getGrid(this.x+this.bounds.bottomBound[0][i], 
-                             this.y+this.bounds.bottomBound[1][i]) ) {
+        
+    this.checkDown = function() {
+        for (var r=0; r < 3; ++r) {
+        for (var c=0; c < 3; ++c) {
+            if (this.pieceGrid[r][c]) {
+                if ( (this.y + c) === 19 ) {
                     console.log("collision");
-                    console.log(this.x+this.bounds.bottomBound[0][i]);
-                    console.log(this.y+this.bounds.bottomBound[1][i]);
                     return false;
+                } else if (c < 2) {
+                    if ( !(this.pieceGrid[r][c+1]) &&
+                          (getGrid(this.x+r, this.y+c+1)) ) 
+                    {
+                        console.log("collision");
+                        return false;                           
+                    }
+                } else if (c === 2) {
+                    if (getGrid(this.x+r, this.y+c+1)) {
+                        console.log("collision");
+                        return false;
+                    }
+                
                 }
-        }
-        return true;
-    },
+            }
+        }}
+        return true;    
+    },     
         
     this.checkRight = function() {
         for (var r=0; r < 3; ++r) {
         for (var c=0; c < 3; ++c) {
             if (this.pieceGrid[r][c]) {
-                if ( (this.x + r) === 19 ) {
-                    console.log("collision");
+                if ( (this.x + r) === 9 ) {
+                    console.log("collisionA");
                     return false;
                 } else if (r < 2) {
                     if ( !(this.pieceGrid[r+1][c]) &&
                           (getGrid(this.x+r+1, this.y+c)) ) 
                     {
-                        console.log("collision");
+                        console.log("collisionB");
                         return false;                           
                     }
                 } else if (r === 2) {
                     if (getGrid(this.x+r+1, this.y+c)) {
-                        console.log("collision");
+                        console.log("collisionC");
                         return false;
                     }
                 
