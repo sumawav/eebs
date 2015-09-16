@@ -293,12 +293,21 @@ function Piece (x, y, type, orientation) {
     this.pieceGridLen = 0;
 
     
-    this.initPiece = function () {
+//    this.initPiece = function () {
         this.pieceGrid = getPieceGrid(this.type, this.orientation);
         this.pieceGridLen = this.pieceGrid[0].length;
-        console.log("pieceGridLen: "+this.pieceGridLen);
         this.oriNum = getOrientationNum(this.type);
-    },
+//    },
+    
+    this.spawn = function () {
+        this.x = 3;
+        this.y = -1
+        this.type = Math.floor(Math.random()*2);
+        this.orientation = 0;
+        this.pieceGrid = getPieceGrid(this.type, this.orientation); 
+        this.pieceGridLen = this.pieceGrid[0].length;        
+        this.oriNum = getOrientationNum(this.type);               
+    }
     
     this.refreshPiece = function () {
         this.pieceGrid = getPieceGrid(this.type, this.orientation);
@@ -511,13 +520,21 @@ function draw () {
         upHeld = false;
     }
     if (downPressed) {
-        //if (!downHeld) {
+        if (!downHeld) {
             piece.drop();
             downHeld = true;
-        //}
+        }
     } else {
         downHeld = false;
     }
+    if (upPressed) {
+        //if (!downHeld) {
+            piece.drop();
+            upHeld = true;
+        //}
+    } else {
+        upHeld = false;
+    }    
     if (rotLeftPressed) {
         if (!rotLeftHeld) {
             piece.rotateCCW();
@@ -536,21 +553,14 @@ function draw () {
     }    
     
     if (pieceLock) {
-        
         var toClear = [];
         toClear = checkGridLines();
         for (var i = 0; i < toClear.length; ++i) {
             clearLine(toClear[i]);
             moveDown(toClear[i]);
         }
-    
-    
         pieceLock = false;
-        piece.x = Math.floor(Math.random()*8);
-        piece.y = -1;
-        piece.orientation = 0;
-        piece.refreshPiece();
-    
+        piece.spawn();
     }
 
 
@@ -558,10 +568,9 @@ function draw () {
 }
 
 
-var piece = new Piece(0, 0, 1, 0);
-piece.initPiece();
+var piece = new Piece(0, -1, Math.floor(Math.random()*2), 0);
 
-setGrid(5, 10);
+//setGrid(5, 10);
 
 for (var i=1; i < 10; ++i) {
     setGrid(i, 19);
