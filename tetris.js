@@ -14,6 +14,7 @@ var GRID = [];
 
 // GLOBALS
 var pieceLock = false;
+var altitude = 20;
 
 // buttons
 var rightPressed = false;
@@ -445,6 +446,7 @@ function Piece (x, y, type, orientation) {
         if (this.checkDown()) {
             this.clearGrid();
             ++this.y;
+            this.refreshPiece();
         } else {
             pieceLock = true;
         }
@@ -675,7 +677,35 @@ function handlePieceLock() {
         moveDown(toClear[i]);
     }
     pieceLock = false;
+    altimeter();
+    if (altitude === 0) { gameOver(); }
     piece.spawn();
+}
+
+function altimeter () {
+    var alt = 20;
+    for (var r=0; r < 10; ++r) {
+        for (var c=0; c < 19; ++c) {
+            if ( GRID[r][c].status && (c < alt) ) {
+                 alt = c;
+            }   
+        }
+    }
+    altitude = alt;
+    console.log("altitude: "+altitude);
+}
+
+function gameOver () {
+    for (var r=0; r < 10; ++r){
+        for (var c=0; c < 20; ++c) {
+            setGrid(r, c, getBlockColor(Math.floor(Math.random()*7)) );
+        }
+    }
+    console.log("GAME OVER");
+    drawGrid();
+
+
+
 }
 
 function gameLoop () {
@@ -685,10 +715,12 @@ function gameLoop () {
     lag += elapsed;
     previous = current;
     
+    /*
+    // draw
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawWalls();
     piece.draw();
-    drawGrid();
+    drawGrid();*/
     
     playerControl(); 
     if (lag > 1000){
@@ -696,12 +728,14 @@ function gameLoop () {
         lag = 0;
     }
     
-    
     // pieceLock
-    if (pieceLock) {
-        handlePieceLock();
-    }
-
+    if (pieceLock) handlePieceLock();
+    
+    // draw
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawWalls();
+    piece.draw();
+    drawGrid();    
 
     requestAnimationFrame(gameLoop);
 }
@@ -718,6 +752,7 @@ for (var i=1; i < 10; ++i) {
 var d = new Date();
 var previous = d.getTime();
 var lag = 0;
+altimeter();
 gameLoop();
 
 
