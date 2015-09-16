@@ -376,19 +376,32 @@ function Piece (x, y, type, orientation) {
         }
         return true;
     },
-    
+        
     this.checkRight = function() {
-        for (var i=0; i < this.bounds.rightBound[0].length; ++i) {
-                if ( getGrid(this.x+this.bounds.rightBound[0][i], 
-                             this.y+this.bounds.rightBound[1][i]) ) {
+        for (var r=0; r < 3; ++r) {
+        for (var c=0; c < 3; ++c) {
+            if (this.pieceGrid[r][c]) {
+                if ( (this.x + r) === 19 ) {
                     console.log("collision");
-                    console.log(this.x+this.bounds.rightBound[0][i]);
-                    console.log(this.y+this.bounds.rightBound[1][i]);
                     return false;
+                } else if (r < 2) {
+                    if ( !(this.pieceGrid[r+1][c]) &&
+                          (getGrid(this.x+r+1, this.y+c)) ) 
+                    {
+                        console.log("collision");
+                        return false;                           
+                    }
+                } else if (r === 2) {
+                    if (getGrid(this.x+r+1, this.y+c)) {
+                        console.log("collision");
+                        return false;
+                    }
+                
                 }
-        }
+            }
+        }}
         return true;    
-    },
+    },     
         
     this.checkLeft = function() {
         for (var r=0; r < 3; ++r) {
