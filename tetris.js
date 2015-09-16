@@ -147,7 +147,7 @@ function clearBlock (r, c) {
 
 // returns status of block in GRID
 function getGrid (r, c) {
-    if ( (r < 0) || (r > 9) || (c > 19) )
+    if ( (r < 0) || (r > 9) || (c > 19) || (c < 0) )
         return true;
     else
         return GRID[r][c].status;
@@ -222,6 +222,64 @@ function getPieceGrid (type, orientation) {
         }
         return grid;
     }
+    if (type === 1){
+        switch (orientation) {
+            case 0:
+                grid = [[0, 1, 0, 0],   // OOOO
+                        [0, 1, 0, 0],   // XXXX
+                        [0, 1, 0, 0],   // OOOO
+                        [0, 1, 0, 0]];  // OOOO
+                break;            
+            case 1:
+                grid = [[0, 0, 0, 0],   // OOXO
+                        [0, 0, 0, 0],   // OOXO
+                        [1, 1, 1, 1],   // OOXO
+                        [0, 0, 0, 0]];  // OOXO
+                break;   
+            default:     
+        }
+        return grid;
+    
+    }
+    if (type === 0){
+        switch (orientation) {
+            case 0:
+                grid = [[0, 1, 1],  // OOO
+                        [0, 1, 0],  // XXX
+                        [0, 1, 0]]; // XOO
+                break;
+            case 1:
+                grid = [[1, 0, 0],  // XXO
+                        [1, 1, 1],  // OXO
+                        [0, 0, 0]]; // OXO
+                break;
+            case 2:
+                grid = [[0, 0, 1],  // OOO
+                        [0, 0, 1],  // OOX
+                        [0, 1, 1]]; // XXX
+                break;
+            case 3:
+                grid = [[0, 0, 0],  // OXO
+                        [1, 1, 1],  // OXO
+                        [0, 0, 1]]; // OXX
+                break;
+            default:                                             
+        }
+        return grid;
+    }    
+}
+
+// returns the number of orientations for a given type
+function getOrientationNum(type) {
+    switch(type) {
+        case 0:
+            return 4;
+        case 1:
+            return 2;
+        default:
+            return 0;
+    }
+
 }
 
 // single piece object
@@ -230,21 +288,26 @@ function Piece (x, y, type, orientation) {
     this.y = y,
     this.type = type,
     this.orientation = orientation,
+    this.oriNum = 0;
     this.pieceGrid = [],
-    this.xBound = [],
-    this.yBound = [],
+    this.pieceGridLen = 0;
+
     
     this.initPiece = function () {
         this.pieceGrid = getPieceGrid(this.type, this.orientation);
+        this.pieceGridLen = this.pieceGrid[0].length;
+        console.log("pieceGridLen: "+this.pieceGridLen);
+        this.oriNum = getOrientationNum(this.type);
     },
     
     this.refreshPiece = function () {
         this.pieceGrid = getPieceGrid(this.type, this.orientation);
+        this.pieceGridLen = this.pieceGrid[0].length;        
     }
     
     this.draw = function() {
-        for (var r=0; r < 3; ++r) {
-            for (var c=0; c < 3; ++c) {
+        for (var r=0; r < this.pieceGridLen; ++r) {
+            for (var c=0; c < this.pieceGridLen; ++c) {
                 if (this.pieceGrid[r][c]) {
                     setGrid(this.x+r, this.y+c);   
                 }         
@@ -253,14 +316,14 @@ function Piece (x, y, type, orientation) {
     },
     
     this.clearGrid = function() {
-        for (var r=0; r < 3; ++r) {
-            for (var c=0; c < 3; ++c) {
+        for (var r=0; r < this.pieceGridLen; ++r) {
+            for (var c=0; c < this.pieceGridLen; ++c) {
                 if (this.pieceGrid[r][c]) {
                     clearBlock(this.x+r, this.y+c);   
                 }         
             }
         }        
-    }
+    },
     
     this.drop = function() {  
         if (this.checkDown()) {
@@ -291,20 +354,20 @@ function Piece (x, y, type, orientation) {
     },
         
     this.checkDown = function() {
-        for (var r=0; r < 3; ++r) {
-        for (var c=0; c < 3; ++c) {
+        for (var r=0; r < this.pieceGridLen; ++r) {
+        for (var c=0; c < this.pieceGridLen; ++c) {
             if (this.pieceGrid[r][c]) {
                 if ( (this.y + c) === 19 ) {
                     console.log("collision");
                     return false;
-                } else if (c < 2) {
+                } else if (c < this.pieceGridLen-1) {
                     if ( !(this.pieceGrid[r][c+1]) &&
                           (getGrid(this.x+r, this.y+c+1)) ) 
                     {
                         console.log("collision");
                         return false;                           
                     }
-                } else if (c === 2) {
+                } else if (c === this.pieceGridLen-1) {
                     if (getGrid(this.x+r, this.y+c+1)) {
                         console.log("collision");
                         return false;
@@ -317,20 +380,20 @@ function Piece (x, y, type, orientation) {
     },     
         
     this.checkRight = function() {
-        for (var r=0; r < 3; ++r) {
-        for (var c=0; c < 3; ++c) {
+        for (var r=0; r < this.pieceGridLen; ++r) {
+        for (var c=0; c < this.pieceGridLen; ++c) {
             if (this.pieceGrid[r][c]) {
                 if ( (this.x + r) === 9 ) {
                     console.log("collisionA");
                     return false;
-                } else if (r < 2) {
+                } else if (r < this.pieceGridLen-1) {
                     if ( !(this.pieceGrid[r+1][c]) &&
                           (getGrid(this.x+r+1, this.y+c)) ) 
                     {
                         console.log("collisionB");
                         return false;                           
                     }
-                } else if (r === 2) {
+                } else if (r === this.pieceGridLen-1) {
                     if (getGrid(this.x+r+1, this.y+c)) {
                         console.log("collisionC");
                         return false;
@@ -343,8 +406,8 @@ function Piece (x, y, type, orientation) {
     },     
         
     this.checkLeft = function() {
-        for (var r=0; r < 3; ++r) {
-        for (var c=0; c < 3; ++c) {
+        for (var r=0; r < this.pieceGridLen; ++r) {
+        for (var c=0; c < this.pieceGridLen; ++c) {
             if (this.pieceGrid[r][c]) {
                 if ( (this.x + r) === 0 ) {
                     console.log("collision");
@@ -370,7 +433,7 @@ function Piece (x, y, type, orientation) {
     
     this.rotateCW = function() {
         if ( this.checkRotation(false) ) {
-            this.orientation = ++this.orientation % 4;    //cycles through 0..3
+            this.orientation = ++this.orientation % this.oriNum;    //cycles through 0..oriNum
             console.log("rotate Right");
             this.clearGrid();
             this.refreshPiece();
@@ -380,7 +443,7 @@ function Piece (x, y, type, orientation) {
     this.rotateCCW = function() {
         if ( this.checkRotation(true) ) {
             --this.orientation;
-            if (this.orientation < 0) this.orientation = 3;
+            if (this.orientation < 0) this.orientation = this.oriNum-1;
             console.log("rotate Left");
             this.clearGrid();
             this.refreshPiece();   
@@ -391,15 +454,17 @@ function Piece (x, y, type, orientation) {
         var ori = this.orientation;
         var nextGrid = [];         
         if (direction === false) {  
-            ori = ++ori % 4;    //cycles through 0..3
+            ori = ++ori % this.oriNum;    //cycles through 0..this.oriNum
         }
         if (direction === true) {
             --ori;       
-            if (ori < 0) ori = 3;    //cycles through 0..3
+            if (ori < 0) ori = this.oriNum-1;
         }
         nextGrid = getPieceGrid(this.type, ori);
-        for (var r=0; r < 3; ++r) {
-            for (var c=0; c < 3; ++c) {
+        console.log(this.type);
+        
+        for (var r=0; r < this.pieceGridLen; ++r) {
+            for (var c=0; c < this.pieceGridLen; ++c) {
                 if ( (nextGrid[r][c]) && 
                      (!this.pieceGrid[r][c]) && 
                      (getGrid(this.x+r, this.y+c)) ) 
@@ -493,18 +558,16 @@ function draw () {
 }
 
 
-var piece = new Piece(0, 0, 0, 0);
+var piece = new Piece(0, 0, 1, 0);
 piece.initPiece();
 
-setGrid(5, 5);
+setGrid(5, 10);
 
 for (var i=1; i < 10; ++i) {
     setGrid(i, 19);
 }
 
-var test = -5;
-test = test % 4;
-console.log(test);
+
 
 draw();
 
