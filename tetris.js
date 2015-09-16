@@ -115,7 +115,7 @@ function drawBlock (r, c, color) {
 function drawWalls () {
     for (var r = 4; r < 16; r=r+11) {
         for (var c = 0; c < 20; ++c)
-            drawBlock(r, c, "blue");
+            drawBlock(r, c, "gray");
     }
 }
 
@@ -599,12 +599,7 @@ function Piece (x, y, type, orientation) {
     
 }
 
-function draw () {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawWalls();
-    piece.draw();
-    drawGrid();
-
+function playerControl() {
     // controls
     
     // keyboard right
@@ -668,21 +663,47 @@ function draw () {
     } else {
         rotRightHeld = false;
     }    
+
+
+}
+
+function handlePieceLock() {
+    var toClear = [];
+    toClear = checkGridLines();
+    for (var i = 0; i < toClear.length; ++i) {
+        clearLine(toClear[i]);
+        moveDown(toClear[i]);
+    }
+    pieceLock = false;
+    piece.spawn();
+}
+
+function gameLoop () {
+    var d = new Date();
+    var current = d.getTime();
+    var elapsed = current - previous;
+    lag += elapsed;
+    previous = current;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawWalls();
+    piece.draw();
+    drawGrid();
+    
+    playerControl(); 
+    if (lag > 1000){
+        piece.drop();
+        lag = 0;
+    }
+    
     
     // pieceLock
     if (pieceLock) {
-        var toClear = [];
-        toClear = checkGridLines();
-        for (var i = 0; i < toClear.length; ++i) {
-            clearLine(toClear[i]);
-            moveDown(toClear[i]);
-        }
-        pieceLock = false;
-        piece.spawn();
+        handlePieceLock();
     }
 
 
-    requestAnimationFrame(draw);
+    requestAnimationFrame(gameLoop);
 }
 
 
@@ -694,9 +715,10 @@ for (var i=1; i < 10; ++i) {
     setGrid(i, 19, "orange");
 }
 
-
-
-draw();
+var d = new Date();
+var previous = d.getTime();
+var lag = 0;
+gameLoop();
 
 
 
