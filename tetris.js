@@ -224,74 +224,6 @@ function getPieceGrid (type, orientation) {
     }
 }
 
-// returns bounds of piece by type and orientation
-function getBounds (type, orientation) {
-    var bounds = {};
-    var xBound = [];
-    var yBound = [];
-    var bottomBound = [];
-    var leftBound = [];
-    var rightBound = []; 
-    
-    // L piece         
-    if (type === 0) {
-        switch (orientation) {
-            case 0:
-                xBound = [0, 1, 2]; 
-                yBound = [3, 2, 2];
-                bottomBound = [xBound, yBound];
-                xBound = [-1, -1];
-                yBound = [1, 2];
-                leftBound = [xBound, yBound];
-                xBound = [1, 3];
-                yBound = [2, 1];
-                rightBound = [xBound, yBound]; 
-                break; 
-            case 1:
-                xBound = [0, 1];
-                yBound = [1, 3];
-                bottomBound = [xBound, yBound];    
-                xBound = [-1, 0, 0];
-                yBound = [0, 1, 2];
-                leftBound = [xBound, yBound]; 
-                xBound = [2, 2, 2];
-                yBound = [0, 1, 2];
-                rightBound = [xBound, yBound];      
-                break;  
-            case 2:
-                xBound = [0, 1, 2];
-                yBound = [3, 3, 3];
-                bottomBound = [xBound, yBound];    
-                xBound = [1, -1];
-                yBound = [1, 2];
-                leftBound = [xBound, yBound]; 
-                xBound = [3, 3];
-                yBound = [1, 2];
-                rightBound = [xBound, yBound];      
-                break; 
-            case 3:
-                xBound = [1, 2];
-                yBound = [3, 3];
-                bottomBound = [xBound, yBound];    
-                xBound = [0, 0, 0];
-                yBound = [0, 1, 2];
-                leftBound = [xBound, yBound]; 
-                xBound = [2, 2, 3];
-                yBound = [0, 1, 2];
-                rightBound = [xBound, yBound];      
-                break;                                                                  
-            default:
-        }
-    }  
-    bounds.bottomBound = bottomBound;
-    bounds.leftBound = leftBound;
-    bounds.rightBound = rightBound;        
-    return bounds;
-    
-
-}
-
-
 // single piece object
 function Piece (x, y, type, orientation) {
     this.x = x,
@@ -301,19 +233,13 @@ function Piece (x, y, type, orientation) {
     this.pieceGrid = [],
     this.xBound = [],
     this.yBound = [],
-    this.bounds,
     
     this.initPiece = function () {
         this.pieceGrid = getPieceGrid(this.type, this.orientation);
-        var bounds = [];
-        this.bounds = getBounds(this.type, this.orientation);    
     },
     
     this.refreshPiece = function () {
         this.pieceGrid = getPieceGrid(this.type, this.orientation);
-        var bounds = [];
-        this.bounds = getBounds(this.type, this.orientation);
-        //console.log(this.pieceGrid);
     }
     
     this.draw = function() {
