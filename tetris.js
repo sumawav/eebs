@@ -389,56 +389,76 @@ function Piece (x, y, type, orientation) {
         }
         return true;    
     },
-    
+        
     this.checkLeft = function() {
-        for (var i=0; i < this.bounds.leftBound[0].length; ++i) {
-                if ( getGrid(this.x+this.bounds.leftBound[0][i], 
-                             this.y+this.bounds.leftBound[1][i]) ) {
+        for (var r=0; r < 3; ++r) {
+        for (var c=0; c < 3; ++c) {
+            if (this.pieceGrid[r][c]) {
+                if ( (this.x + r) === 0 ) {
                     console.log("collision");
-                    console.log(this.x+this.bounds.leftBound[0][i]);
-                    console.log(this.y+this.bounds.leftBound[1][i]);
                     return false;
+                } else if (r > 0) {
+                    if ( !(this.pieceGrid[r-1][c]) &&
+                          (getGrid(this.x+r-1, this.y+c)) ) 
+                    {
+                        console.log("collision");
+                        return false;                           
+                    }
+                } else if (r === 0) {
+                    if (getGrid(this.x+r-1, this.y+c)) {
+                        console.log("collision");
+                        return false;
+                    }
+                
                 }
-        }
+            }
+        }}
         return true;    
-    },
+    },    
     
     this.rotateCW = function() {
-        this.orientation = ++this.orientation % 4;    //cycles through 0..3
-        console.log("rotate Right");
-        this.clearGrid();
-        this.refreshPiece();
+        if ( this.checkRotation(false) ) {
+            this.orientation = ++this.orientation % 4;    //cycles through 0..3
+            console.log("rotate Right");
+            this.clearGrid();
+            this.refreshPiece();
+        }        
     },    
 
     this.rotateCCW = function() {
-        --this.orientation;
-        if (this.orientation < 0) this.orientation = 3;
-        console.log("rotate Left");
-        this.clearGrid();
-        this.refreshPiece();        
+        if ( this.checkRotation(true) ) {
+            --this.orientation;
+            if (this.orientation < 0) this.orientation = 3;
+            console.log("rotate Left");
+            this.clearGrid();
+            this.refreshPiece();   
+        }     
     },
     
-    this.checkCW = function() {
+    this.checkRotation = function(direction) {
         var ori = this.orientation;
-        var nextGrid = [];        
-        var out = true;
-        ori = ++ori % 4;    //cycles through 0..3
+        var nextGrid = [];         
+        if (direction === false) {  
+            ori = ++ori % 4;    //cycles through 0..3
+        }
+        if (direction === true) {
+            --ori;       
+            if (ori < 0) ori = 3;    //cycles through 0..3
+        }
         nextGrid = getPieceGrid(this.type, ori);
         for (var r=0; r < 3; ++r) {
             for (var c=0; c < 3; ++c) {
                 if ( (nextGrid[r][c]) && 
                      (!this.pieceGrid[r][c]) && 
-                     (getGrid(this.x+this.bounds.leftBound[0][i], 
-                              this.y+this.bounds.leftBound[1][i])) ) {
-                    
-                
-                }
-                    
+                     (getGrid(this.x+r, this.y+c)) ) 
+                {
+                    console.log("collision");
+                    return false;                
+                }                    
             }
         }
-    
-    }
-    
+        return true;
+    }   
     
 }
 
@@ -524,7 +544,7 @@ function draw () {
 var piece = new Piece(0, 0, 0, 0);
 piece.initPiece();
 
-//setGrid(5, 5);
+setGrid(5, 5);
 
 for (var i=1; i < 10; ++i) {
     setGrid(i, 19);
