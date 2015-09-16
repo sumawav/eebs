@@ -38,7 +38,7 @@ document.addEventListener("keyup", keyUpHandler, false);
 for (var r=0; r<10; ++r) {
     GRID[r] = [];
     for (var c=0; c<20; ++c) {
-        GRID[r][c] = { status: false, color: 0 };
+        GRID[r][c] = { status: false, color: "blue" };
     } 
 }
 
@@ -93,13 +93,13 @@ function keyUpHandler(e) {
 }
 
 // draws a block
-function drawBlock (r, c) {
+function drawBlock (r, c, color) {
     var x = r * BLOCK;
     var y = c * BLOCK;
 
     ctx.beginPath();
     ctx.rect(x, y, BLOCK, BLOCK);
-    ctx.fillStyle = "blue";
+    ctx.fillStyle = color;
     ctx.fill();
     ctx.closePath();
     
@@ -115,7 +115,7 @@ function drawBlock (r, c) {
 function drawWalls () {
     for (var r = 4; r < 16; r=r+11) {
         for (var c = 0; c < 20; ++c)
-            drawBlock(r, c);
+            drawBlock(r, c, "blue");
     }
 }
 
@@ -124,19 +124,20 @@ function drawGrid () {
     for (var r=0; r < 10; ++r) {
         for (var c=0; c < 20; ++c) {
             if ( GRID[r][c].status )
-                drawBlock(r+5 , c);
+                drawBlock(r+5 , c, GRID[r][c].color);
         }
     }
 }
 
 // sets a block in GRID
-function setGrid (r, c) {   
+function setGrid (r, c, color) {   
     if ( (r < 0) || (r > 9) || (c < 0) || (c > 19) ){
         console.log("WRITING OUT OF BOUNDS");
         console.log("r: "+r);
         console.log("c: "+c);        
     } else {
         GRID[r][c].status = true;
+        GRID[r][c].color = color;
     }
 }
 
@@ -196,6 +197,7 @@ function moveDown(y) {
 // returns grid of piece by type and orientation
 function getPieceGrid (type, orientation) {
     var grid;
+    // L piece
     if (type === 0){
         switch (orientation) {
             case 0:
@@ -222,6 +224,7 @@ function getPieceGrid (type, orientation) {
         }
         return grid;
     }
+    // I piece
     if (type === 1){
         switch (orientation) {
             case 0:
@@ -241,6 +244,7 @@ function getPieceGrid (type, orientation) {
         return grid;
     
     }
+    // J piece
     if (type === 2){
         switch (orientation) {
             case 0:
@@ -267,6 +271,7 @@ function getPieceGrid (type, orientation) {
         }
         return grid;
     }  
+    // T piece
     if (type === 3){
         switch (orientation) {
             case 0:
@@ -293,6 +298,7 @@ function getPieceGrid (type, orientation) {
         }
         return grid;
     }   
+    // Square piece
     if (type === 4){
         grid = [[0, 0, 0, 0],  // OOOO
                 [0, 1, 1, 0],  // OXXO
@@ -300,6 +306,7 @@ function getPieceGrid (type, orientation) {
                 [0, 0, 0, 0]]; // OOOO 
         return grid;
     }  
+    // S piece
     if (type === 5){
         switch (orientation) {
             case 0:
@@ -316,6 +323,7 @@ function getPieceGrid (type, orientation) {
         }
         return grid;
     }      
+    // Z piece
     if (type === 6){
         switch (orientation) {
             case 0:
@@ -356,6 +364,29 @@ function getOrientationNum(type) {
     }
 }
 
+// gets correct color for piece type
+function getBlockColor (type) {
+    switch(type) {
+        case 0:
+            return "orange";
+        case 1:
+            return "red";
+        case 2:
+            return "blue";  
+        case 3:
+            return "blue";  
+        case 4:
+            return "yellow";
+        case 5:
+            return "violet";
+        case 6:
+            return "green";                        
+        default:
+            return 0;
+    }
+}
+
+
 // single piece object
 function Piece (x, y, type, orientation) {
     this.x = x,
@@ -371,6 +402,7 @@ function Piece (x, y, type, orientation) {
     this.pieceGrid = getPieceGrid(this.type, this.orientation);
     this.pieceGridLen = this.pieceGrid[0].length;
     this.oriNum = getOrientationNum(this.type);
+    this.color = getBlockColor(this.type);
 
     // spawn new piece
     this.spawn = function () {
@@ -380,7 +412,8 @@ function Piece (x, y, type, orientation) {
         this.orientation = 0;
         this.pieceGrid = getPieceGrid(this.type, this.orientation); 
         this.pieceGridLen = this.pieceGrid[0].length;        
-        this.oriNum = getOrientationNum(this.type);               
+        this.oriNum = getOrientationNum(this.type);    
+        this.color = getBlockColor(this.type);           
     }
     
     this.refreshPiece = function () {
@@ -392,7 +425,7 @@ function Piece (x, y, type, orientation) {
         for (var r=0; r < this.pieceGridLen; ++r) {
             for (var c=0; c < this.pieceGridLen; ++c) {
                 if (this.pieceGrid[r][c]) {
-                    setGrid(this.x+r, this.y+c);   
+                    setGrid(this.x+r, this.y+c, this.color);   
                 }         
             }
         }
@@ -658,7 +691,7 @@ var piece = new Piece(0, -1, 6, 0);
 //setGrid(5, 10);
 
 for (var i=1; i < 10; ++i) {
-    setGrid(i, 19);
+    setGrid(i, 19, "orange");
 }
 
 
