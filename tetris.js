@@ -2,15 +2,17 @@
 //tetris.js
 //an implementation of tetris in javascript
 
-
+// CANVAS
 var canvas = document.getElementById("gl-canvas");
 var ctx = canvas.getContext("2d");
 
+// CONSTANTS
 var HEIGHT = canvas.height;
 var WIDTH = canvas.width;
 var BLOCK = HEIGHT/20;
 var GRID = [];
 
+// GLOBALS
 var pieceLock = false;
 
 // buttons
@@ -22,6 +24,10 @@ var rightHeld = false;
 var leftHeld = false;
 var upHeld = false;
 var downHeld = false;
+var rotRightPressed = false;
+var rotLeftPressed = false;
+var rotRightHeld = false;
+var rotLeftHeld = false;
 
 // event listeners
 document.addEventListener("keydown", keyDownHandler, false);
@@ -40,20 +46,28 @@ for (var r=0; r<10; ++r) {
 function keyDownHandler(e) {
     if(e.keyCode == 39) {
         rightPressed = true;
-        console.log("RIGHT");
+        //console.log("RIGHT");
     }
     else if(e.keyCode == 37) {
         leftPressed = true;
-        console.log("LEFT");
+        //console.log("LEFT");
     }
     else if(e.keyCode == 38) {
         upPressed = true;
-        console.log("UP");
+        //console.log("UP");
     }
     else if(e.keyCode == 40) {
         downPressed = true;
-        console.log("DOWN");
-    }    
+        //console.log("DOWN");
+    }  
+    else if(e.keyCode == 90) {
+        rotLeftPressed = true;
+        //console.log("z");
+    } 
+    else if(e.keyCode == 88) {
+        rotRightPressed = true;
+        //console.log("x");
+    }       
 }
 
 // key up handler
@@ -70,6 +84,12 @@ function keyUpHandler(e) {
     else if(e.keyCode == 40) {
         downPressed = false;
     } 
+    else if(e.keyCode == 90) {
+        rotLeftPressed = false;
+    } 
+    else if(e.keyCode == 88) {
+        rotRightPressed = false;
+    }    
 }
 
 // draws a block
@@ -110,18 +130,27 @@ function drawGrid () {
 }
 
 // sets a block in GRID
-function setGrid (r, c) {
-    GRID[r][c].status = true;
+function setGrid (r, c) {   
+    if ( (r < 0) || (r > 9) || (c < 0) || (c > 19) ){
+        console.log("WRITING OUT OF BOUNDS");
+        console.log("r: "+r);
+        console.log("c: "+c);        
+    } else {
+        GRID[r][c].status = true;
+    }
 }
 
 // clears a block in GRID
-function clearGrid (r, c) {
+function clearBlock (r, c) {
     GRID[r][c].status = false;
 }
 
 // returns status of block in GRID
 function getGrid (r, c) {
-    return GRID[r][c].status;
+    if ( (r < 0) || (r > 9) || (c > 19) )
+        return true;
+    else
+        return GRID[r][c].status;
 }
 
 // returns y indices of filled lines
@@ -152,7 +181,6 @@ function clearLine(y) {
 
 // moves all pieces down after line clears
 function moveDown(y) {
-    console.log("moveDown");
     --y;
     for (var c=y; c>=0; --c) {
         for (var r=0; r < 10; ++r) {
@@ -165,68 +193,252 @@ function moveDown(y) {
 
 }
 
+// returns grid of piece by type and orientation
+function getPieceGrid (type, orientation) {
+    var grid;
+    if (type === 0){
+        switch (orientation) {
+            case 0:
+                grid = [[0, 1, 1],  // OOO
+                        [0, 1, 0],  // XXX
+                        [0, 1, 0]]; // XOO
+                break;
+            case 1:
+                grid = [[1, 0, 0],  // XXO
+                        [1, 1, 1],  // OXO
+                        [0, 0, 0]]; // OXO
+                break;
+            case 2:
+                grid = [[0, 0, 1],  // OOO
+                        [0, 0, 1],  // OOX
+                        [0, 1, 1]]; // XXX
+                break;
+            case 3:
+                grid = [[0, 0, 0],  // OXO
+                        [1, 1, 1],  // OXO
+                        [0, 0, 1]]; // OXX
+                break;
+            default:                                             
+        }
+        return grid;
+    }
+}
+
+// returns bounds of piece by type and orientation
+function getBounds (type, orientation) {
+    var bounds = {};
+    var xBound = [];
+    var yBound = [];
+    var bottomBound = [];
+    var leftBound = [];
+    var rightBound = []; 
+    
+    // L piece         
+    if (type === 0) {
+        switch (orientation) {
+            case 0:
+                xBound = [0, 1, 2]; 
+                yBound = [3, 2, 2];
+                bottomBound = [xBound, yBound];
+                xBound = [-1, -1];
+                yBound = [1, 2];
+                leftBound = [xBound, yBound];
+                xBound = [1, 3];
+                yBound = [2, 1];
+                rightBound = [xBound, yBound]; 
+                break; 
+            case 1:
+                xBound = [0, 1];
+                yBound = [1, 3];
+                bottomBound = [xBound, yBound];    
+                xBound = [-1, 0, 0];
+                yBound = [0, 1, 2];
+                leftBound = [xBound, yBound]; 
+                xBound = [2, 2, 2];
+                yBound = [0, 1, 2];
+                rightBound = [xBound, yBound];      
+                break;  
+            case 2:
+                xBound = [0, 1, 2];
+                yBound = [3, 3, 3];
+                bottomBound = [xBound, yBound];    
+                xBound = [1, -1];
+                yBound = [1, 2];
+                leftBound = [xBound, yBound]; 
+                xBound = [3, 3];
+                yBound = [1, 2];
+                rightBound = [xBound, yBound];      
+                break; 
+            case 3:
+                xBound = [1, 2];
+                yBound = [3, 3];
+                bottomBound = [xBound, yBound];    
+                xBound = [0, 0, 0];
+                yBound = [0, 1, 2];
+                leftBound = [xBound, yBound]; 
+                xBound = [2, 2, 3];
+                yBound = [0, 1, 2];
+                rightBound = [xBound, yBound];      
+                break;                                                                  
+            default:
+        }
+    }  
+    bounds.bottomBound = bottomBound;
+    bounds.leftBound = leftBound;
+    bounds.rightBound = rightBound;        
+    return bounds;
+    
+
+}
+
+
 // single piece object
-function Piece (x, y, type) {
+function Piece (x, y, type, orientation) {
     this.x = x,
     this.y = y,
     this.type = type,
+    this.orientation = orientation,
+    this.pieceGrid = [],
+    this.xBound = [],
+    this.yBound = [],
+    this.bounds,
+    
+    this.initPiece = function () {
+        this.pieceGrid = getPieceGrid(this.type, this.orientation);
+        var bounds = [];
+        this.bounds = getBounds(this.type, this.orientation);    
+    },
+    
+    this.refreshPiece = function () {
+        this.pieceGrid = getPieceGrid(this.type, this.orientation);
+        var bounds = [];
+        this.bounds = getBounds(this.type, this.orientation);
+        //console.log(this.pieceGrid);
+    }
+    
+    this.draw = function() {
+        for (var r=0; r < 3; ++r) {
+            for (var c=0; c < 3; ++c) {
+                if (this.pieceGrid[r][c]) {
+                    setGrid(this.x+r, this.y+c);   
+                }         
+            }
+        }
+    },
+    
+    this.clearGrid = function() {
+        for (var r=0; r < 3; ++r) {
+            for (var c=0; c < 3; ++c) {
+                if (this.pieceGrid[r][c]) {
+                    clearBlock(this.x+r, this.y+c);   
+                }         
+            }
+        }        
+    }
     
     this.drop = function() {  
         if (this.checkDown()) {
-            clearGrid(this.x, this.y);
+            this.clearGrid();
             ++this.y;
         } else {
             pieceLock = true;
-        
         }
     },
     
     this.left = function() {
         if (this.checkLeft()) {
-            clearGrid(this.x, this.y);
+            this.clearGrid(this.x, this.y);
             --this.x;
         }
     },
 
     this.right = function() {
         if (this.checkRight()) {
-            clearGrid(this.x, this.y);
+            this.clearGrid(this.x, this.y);
             ++this.x;
         }
     },
     
     this.up = function() {
-        clearGrid(this.x, this.y);
+        this.clearGrid(this.x, this.y);
         --this.y;
     },
     
-    this.draw = function() {
-        setGrid(this.x, this.y);
-    },
-    
-    this.checkDown = function() {
-        if (this.y === 19)
-            return false;
-        if ( getGrid(this.x, this.y+1) )
-            return false;
+    this.checkDown = function() {        
+        for (var i=0; i < this.bounds.bottomBound[0].length; ++i) {
+                if ( getGrid(this.x+this.bounds.bottomBound[0][i], 
+                             this.y+this.bounds.bottomBound[1][i]) ) {
+                    console.log("collision");
+                    console.log(this.x+this.bounds.bottomBound[0][i]);
+                    console.log(this.y+this.bounds.bottomBound[1][i]);
+                    return false;
+                }
+        }
         return true;
     },
     
     this.checkRight = function() {
-        if (this.x === 9)
-            return false;
-        if ( getGrid(this.x+1, this.y) )
-            return false;
-        return true;
+        for (var i=0; i < this.bounds.rightBound[0].length; ++i) {
+                if ( getGrid(this.x+this.bounds.rightBound[0][i], 
+                             this.y+this.bounds.rightBound[1][i]) ) {
+                    console.log("collision");
+                    console.log(this.x+this.bounds.rightBound[0][i]);
+                    console.log(this.y+this.bounds.rightBound[1][i]);
+                    return false;
+                }
+        }
+        return true;    
     },
     
     this.checkLeft = function() {
-        if (this.x === 0)
-            return false;
-        if ( getGrid(this.x-1, this.y) )
-            return false;
-        return true;
-    }    
+        for (var i=0; i < this.bounds.leftBound[0].length; ++i) {
+                if ( getGrid(this.x+this.bounds.leftBound[0][i], 
+                             this.y+this.bounds.leftBound[1][i]) ) {
+                    console.log("collision");
+                    console.log(this.x+this.bounds.leftBound[0][i]);
+                    console.log(this.y+this.bounds.leftBound[1][i]);
+                    return false;
+                }
+        }
+        return true;    
+    },
+    
+    this.rotateCW = function() {
+        this.orientation = ++this.orientation % 4;    //cycles through 0..3
+        console.log("rotate Right");
+        this.clearGrid();
+        this.refreshPiece();
+    },    
+
+    this.rotateCCW = function() {
+        --this.orientation;
+        if (this.orientation < 0) this.orientation = 3;
+        console.log("rotate Left");
+        this.clearGrid();
+        this.refreshPiece();        
+    },
+    
+    this.checkCW = function() {
+        var ori = this.orientation;
+        var nextGrid = [];        
+        var out = true;
+        ori = ++ori % 4;    //cycles through 0..3
+        nextGrid = getPieceGrid(this.type, ori);
+        for (var r=0; r < 3; ++r) {
+            for (var c=0; c < 3; ++c) {
+                if ( (nextGrid[r][c]) && 
+                     (!this.pieceGrid[r][c]) && 
+                     (getGrid(this.x+this.bounds.leftBound[0][i], 
+                              this.y+this.bounds.leftBound[1][i])) ) {
+                    
+                
+                }
+                    
+            }
+        }
+    
+    }
+    
     
 }
 
@@ -262,19 +474,34 @@ function draw () {
         upHeld = false;
     }
     if (downPressed) {
-    //    if (!downHeld) {
+        //if (!downHeld) {
             piece.drop();
             downHeld = true;
-      //  }
+        //}
     } else {
         downHeld = false;
     }
+    if (rotLeftPressed) {
+        if (!rotLeftHeld) {
+            piece.rotateCCW();
+            rotLeftHeld = true;
+        }
+    } else {
+        rotLeftHeld = false;
+    }
+    if (rotRightPressed) {
+        if (!rotRightHeld) {
+            piece.rotateCW();
+            rotRightHeld = true;
+        }
+    } else {
+        rotRightHeld = false;
+    }    
     
     if (pieceLock) {
         
         var toClear = [];
         toClear = checkGridLines();
-        //console.log(toClear);
         for (var i = 0; i < toClear.length; ++i) {
             clearLine(toClear[i]);
             moveDown(toClear[i]);
@@ -282,9 +509,10 @@ function draw () {
     
     
         pieceLock = false;
-        piece.x = Math.floor(Math.random()*10);
-        piece.y = 0;
-        piece.draw();
+        piece.x = Math.floor(Math.random()*8);
+        piece.y = -1;
+        piece.orientation = 0;
+        piece.refreshPiece();
     
     }
 
@@ -293,14 +521,18 @@ function draw () {
 }
 
 
-var piece = new Piece(9, 5, 0);
+var piece = new Piece(0, 0, 0, 0);
+piece.initPiece();
 
-for (var i=0; i < 9; ++i) {
+//setGrid(5, 5);
+
+for (var i=1; i < 10; ++i) {
     setGrid(i, 19);
 }
-for (var i=0; i < 9; ++i) {
-    setGrid(i, 18);
-}
+
+var test = -5;
+test = test % 4;
+console.log(test);
 
 draw();
 
