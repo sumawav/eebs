@@ -38,7 +38,7 @@ document.addEventListener("keyup", keyUpHandler, false);
 for (var r=0; r<10; ++r) {
     GRID[r] = [];
     for (var c=0; c<20; ++c) {
-        GRID[r][c] = { status: false };
+        GRID[r][c] = { status: false, color: 0 };
     } 
 }
 
@@ -292,7 +292,46 @@ function getPieceGrid (type, orientation) {
             default:                                             
         }
         return grid;
+    }   
+    if (type === 4){
+        grid = [[0, 0, 0, 0],  // OOOO
+                [0, 1, 1, 0],  // OXXO
+                [0, 1, 1, 0],  // OXXO
+                [0, 0, 0, 0]]; // OOOO 
+        return grid;
+    }  
+    if (type === 5){
+        switch (orientation) {
+            case 0:
+                grid = [[0, 0, 1],  // OOO
+                        [0, 1, 1],  // OXX
+                        [0, 1, 0]]; // XXO
+                break;
+            case 1:
+                grid = [[1, 1, 0],  // XOO
+                        [0, 1, 1],  // XXO
+                        [0, 0, 0]]; // OXO
+                break;
+            default:                                             
+        }
+        return grid;
     }      
+    if (type === 6){
+        switch (orientation) {
+            case 0:
+                grid = [[0, 1, 0],  // OOO
+                        [0, 1, 1],  // XXO
+                        [0, 0, 1]]; // OXX
+                break;
+            case 1:
+                grid = [[0, 0, 0],  // OOX
+                        [0, 1, 1],  // OXX
+                        [1, 1, 0]]; // OXO
+                break;
+            default:                                             
+        }
+        return grid;
+    }       
 }
 
 // returns the number of orientations for a given type
@@ -306,10 +345,15 @@ function getOrientationNum(type) {
             return 4;  
         case 3:
             return 4;  
+        case 4:
+            return 1;
+        case 5:
+            return 2;
+        case 6:
+            return 2;                        
         default:
             return 0;
     }
-
 }
 
 // single piece object
@@ -318,21 +362,21 @@ function Piece (x, y, type, orientation) {
     this.y = y,
     this.type = type,
     this.orientation = orientation,
-    this.oriNum = 0;
+    this.oriNum = 0,
     this.pieceGrid = [],
-    this.pieceGridLen = 0;
+    this.pieceGridLen = 0,
+    this.color,
 
-    
-//    this.initPiece = function () {
-        this.pieceGrid = getPieceGrid(this.type, this.orientation);
-        this.pieceGridLen = this.pieceGrid[0].length;
-        this.oriNum = getOrientationNum(this.type);
-//    },
-    
+    // init
+    this.pieceGrid = getPieceGrid(this.type, this.orientation);
+    this.pieceGridLen = this.pieceGrid[0].length;
+    this.oriNum = getOrientationNum(this.type);
+
+    // spawn new piece
     this.spawn = function () {
         this.x = 3;
         this.y = -1
-        this.type = Math.floor(Math.random()*4);
+        this.type = Math.floor(Math.random()*7);
         this.orientation = 0;
         this.pieceGrid = getPieceGrid(this.type, this.orientation); 
         this.pieceGridLen = this.pieceGrid[0].length;        
@@ -609,7 +653,7 @@ function draw () {
 }
 
 
-var piece = new Piece(0, -1, 3, 0);
+var piece = new Piece(0, -1, 6, 0);
 
 //setGrid(5, 10);
 
