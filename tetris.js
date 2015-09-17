@@ -15,6 +15,7 @@ var GRID = [];
 // GLOBALS
 var pieceLock = false;
 var altitude = 20;
+var pause = false;
 
 // buttons
 var rightPressed = false;
@@ -29,6 +30,11 @@ var rotRightPressed = false;
 var rotLeftPressed = false;
 var rotRightHeld = false;
 var rotLeftHeld = false;
+var spacePressed = false;
+var spaceHeld = false;
+
+//sound effects
+var shiftAudio;
 
 // event listeners
 document.addEventListener("keydown", keyDownHandler, false);
@@ -41,6 +47,21 @@ for (var r=0; r<10; ++r) {
     for (var c=0; c<20; ++c) {
         GRID[r][c] = { status: false, color: "blue" };
     } 
+}
+
+// init audio
+function initAudio() {
+    shiftAudio = new Audio("audio/shift.wav");
+}
+
+// play sound effects
+function sfx(id) {
+    switch(id) {
+        case 0:
+            shiftAudio.play();
+            break;
+        default:
+    }
 }
 
 // key down handler
@@ -63,12 +84,17 @@ function keyDownHandler(e) {
     }  
     else if(e.keyCode == 90) {
         rotLeftPressed = true;
+        //sfx(0);
         //console.log("z");
     } 
     else if(e.keyCode == 88) {
         rotRightPressed = true;
         //console.log("x");
-    }       
+    }  
+    else if(e.keyCode == 32) {
+        spacePressed = true;
+        console.log("spacebar");
+    }         
 }
 
 // key up handler
@@ -90,7 +116,10 @@ function keyUpHandler(e) {
     } 
     else if(e.keyCode == 88) {
         rotRightPressed = false;
-    }    
+    }  
+    else if(e.keyCode == 32) {
+        spacePressed = false;
+    }      
 }
 
 // draws a block
@@ -560,6 +589,7 @@ function Piece (x, y, type, orientation) {
 
     this.rotateCCW = function() {
         if ( this.checkRotation(true) ) {
+
             --this.orientation;
             if (this.orientation < 0) this.orientation = this.oriNum-1;
             console.log("rotate Left");
@@ -596,6 +626,7 @@ function Piece (x, y, type, orientation) {
                 }                    
             }
         }
+        //sfx(0);
         return true;
     }   
     
@@ -622,15 +653,6 @@ function playerControl() {
     } else {
         leftHeld = false;
     } 
-    // keyboard up (up)
-    /*if (upPressed) {
-        if (!upHeld) {
-            piece.up();
-            upHeld = true;
-        }
-    } else {
-        upHeld = false;
-    }*/
     // keyboard down
     if (downPressed) {
         if (!downHeld) {
@@ -650,6 +672,7 @@ function playerControl() {
     // Z key   
     if (rotLeftPressed) {
         if (!rotLeftHeld) {
+            //sfx(0);
             piece.rotateCCW();
             rotLeftHeld = true;
         }
@@ -665,7 +688,18 @@ function playerControl() {
     } else {
         rotRightHeld = false;
     }    
-
+    // spacebar
+    if (spacePressed) {
+        if (!spaceHeld) {
+            if (!pause)
+                pause = true;
+            else
+                pause = false;
+            spaceHeld = true;
+        }
+    } else {
+        spaceHeld = false;
+    }
 
 }
 
@@ -678,8 +712,12 @@ function handlePieceLock() {
     }
     pieceLock = false;
     altimeter();
-    if (altitude === 0) { gameOver(); }
-    piece.spawn();
+    if (altitude === 0) { 
+        drawGameOver(); 
+    } else {
+        piece.spawn();
+        pause = false;
+    }
 }
 
 function altimeter () {
@@ -695,7 +733,7 @@ function altimeter () {
     console.log("altitude: "+altitude);
 }
 
-function gameOver () {
+function drawGameOver () {
     for (var r=0; r < 10; ++r){
         for (var c=0; c < 20; ++c) {
             setGrid(r, c, getBlockColor(Math.floor(Math.random()*7)) );
@@ -703,9 +741,13 @@ function gameOver () {
     }
     console.log("GAME OVER");
     drawGrid();
+    pressAnyKey();
+    
+}
 
-
-
+function pressAnyKey() {
+    
+    console.log("Press Any Key");
 }
 
 function gameLoop () {
@@ -715,21 +757,22 @@ function gameLoop () {
     lag += elapsed;
     previous = current;
     
-    /*
-    // draw
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawWalls();
-    piece.draw();
-    drawGrid();*/
-    
+    //  controls    
     playerControl(); 
-    if (lag > 1000){
-        piece.drop();
-        lag = 0;
-    }
     
-    // pieceLock
-    if (pieceLock) handlePieceLock();
+    if (!pause) {
+        // piece drop
+        if (lag > 300){
+            piece.drop();
+            lag = 0;
+        }
+        //console.log("piecelock: "+pieceLock);
+        // check for pieceLock
+        if (pieceLock) {
+            pause = true;        
+            handlePieceLock();
+        }
+    }
     
     // draw
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -752,6 +795,7 @@ for (var i=1; i < 10; ++i) {
 var d = new Date();
 var previous = d.getTime();
 var lag = 0;
+initAudio();
 altimeter();
 gameLoop();
 
