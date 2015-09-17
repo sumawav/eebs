@@ -17,7 +17,7 @@ var pieceLock = false;
 var altitude = 20;
 var pause = false;
 
-// buttons
+// BUTTONS
 var rightPressed = false;
 var leftPressed = false;
 var upPressed = false;
@@ -436,6 +436,7 @@ function Piece (x, y, type, orientation) {
 
     // spawn new piece
     this.spawn = function () {
+        console.log("-----spawn-----");    
         this.x = 3;
         this.y = -1
         this.type = Math.floor(Math.random()*7);
@@ -452,6 +453,7 @@ function Piece (x, y, type, orientation) {
     }
     
     this.draw = function() {
+        console.log("-----draw-----");
         for (var r=0; r < this.pieceGridLen; ++r) {
             for (var c=0; c < this.pieceGridLen; ++c) {
                 if (this.pieceGrid[r][c]) {
@@ -473,10 +475,12 @@ function Piece (x, y, type, orientation) {
     
     this.drop = function() {  
         if (this.checkDown()) {
+            console.log("-----drop-----");
             this.clearGrid();
             ++this.y;
-            this.refreshPiece();
+            //this.refreshPiece();
         } else {
+            console.log("-----pieceLock-----");
             pieceLock = true;
         }
     },
@@ -504,19 +508,21 @@ function Piece (x, y, type, orientation) {
         for (var r=0; r < this.pieceGridLen; ++r) {
         for (var c=0; c < this.pieceGridLen; ++c) {
             if (this.pieceGrid[r][c]) {
+                // hitting the bottom of the playfied
                 if ( (this.y + c) === 19 ) {
-                    console.log("collision");
+                    console.log("collisionA");
                     return false;
+                    
                 } else if (c < this.pieceGridLen-1) {
                     if ( !(this.pieceGrid[r][c+1]) &&
                           (getGrid(this.x+r, this.y+c+1)) ) 
                     {
-                        console.log("collision");
+                        console.log("collisionB");
                         return false;                           
                     }
                 } else if (c === this.pieceGridLen-1) {
                     if (getGrid(this.x+r, this.y+c+1)) {
-                        console.log("collision");
+                        console.log("collisionC");
                         return false;
                     }
                 
@@ -538,6 +544,7 @@ function Piece (x, y, type, orientation) {
                           (getGrid(this.x+r+1, this.y+c)) ) 
                     {
                         console.log("collisionB");
+                        //I Stand With Ahmed 
                         return false;                           
                     }
                 } else if (r === this.pieceGridLen-1) {
@@ -715,8 +722,7 @@ function handlePieceLock() {
     if (altitude === 0) { 
         drawGameOver(); 
     } else {
-        piece.spawn();
-        pause = false;
+        piece.spawn(); 
     }
 }
 
@@ -757,22 +763,23 @@ function gameLoop () {
     lag += elapsed;
     previous = current;
     
-    //  controls    
-    playerControl(); 
-    
-    if (!pause) {
+    // auto piece drop and piecelock
+    if (!pause) {    
         // piece drop
-        if (lag > 300){
-            piece.drop();
-            lag = 0;
-        }
-        //console.log("piecelock: "+pieceLock);
+        if (!pieceLock) {
+            if (lag > 300){
+                piece.drop();
+                lag = 0;
+            }
+        }                
         // check for pieceLock
-        if (pieceLock) {
-            pause = true;        
+        if (pieceLock) {      
             handlePieceLock();
         }
     }
+    
+    //  controls    
+    playerControl();     
     
     // draw
     ctx.clearRect(0, 0, canvas.width, canvas.height);
