@@ -15,7 +15,7 @@ var GRID = [];
 // GLOBALS
 var pieceLock = false;
 var altitude = 20;
-var pause = false;
+var gravity = false;
 var elapsed = 0;
 var flashOn = false;
 
@@ -147,8 +147,7 @@ function drawBlock (r, c, color, transparency) {
     var y = c * BLOCK;
     
     // set transparency
-    ctx.globalAlpha = transparency;
-    ctx.globalAlpha = ctx.globalAlpha || 1;
+    ctx.globalAlpha = transparency || 1; // 1 if undefined
     
     // draw square
     ctx.beginPath();
@@ -231,8 +230,20 @@ function checkGridLines () {
 function clearLine(y) {
     for (var r=0; r < 10; ++r) {
         GRID[r][y].status = false;
+        GRID[r][y].trans = 1;
     }
+}
 
+// fades a line
+function fadeLine(y) {
+    var lines = [];
+    lines = y;
+    for (var r=0; r < 10; ++r) {
+        for (var c=0; c < lines.length; ++c) {
+            GRID[r][lines[c]].trans -= 0.01;
+             
+        }
+    }
 }
 
 // moves all pieces down after line clears
@@ -717,10 +728,10 @@ function playerControl() {
     // spacebar
     if (spacePressed) {
         if (!spaceHeld) {
-            if (!pause)
-                pause = true;
+            if (!gravity)
+                gravity = true;
             else
-                pause = false;
+                gravity = false;
             spaceHeld = true;
         }
     } else {
@@ -730,6 +741,22 @@ function playerControl() {
 }
 
 function handlePieceLock() {
+    var toClear = [];
+    toClear = checkGridLines();
+    for (var i = 0; i < toClear.length; ++i) {
+        clearLine(toClear[i]);
+        moveDown(toClear[i]);
+    }
+    pieceLock = false;
+    altimeter();
+    if (altitude === 0) { 
+        drawGameOver(); 
+    } else {
+        piece.spawn(); 
+    }
+}
+
+function OLD_handlePieceLock() {
     var toClear = [];
     toClear = checkGridLines();
     for (var i = 0; i < toClear.length; ++i) {
@@ -764,7 +791,7 @@ function drawGameOver () {
             setGrid(r, c, getBlockColor(Math.floor(Math.random()*7)) );
         }
     }
-    pause = true;
+    gravity = true;
     console.log("GAME OVER");
     drawGrid();
     pressAnyKey();
@@ -784,22 +811,23 @@ function gameLoop () {
     previous = current;
     
     // auto piece drop and piecelock
-    if (!pause) {    
+    if (!gravity) {    
         // piece drop
         if (!pieceLock) {
             if (lag > 300){
                 piece.drop();
                 lag = 0;
             }
-        }                
+        }  
+    } //temporary             
         // check for pieceLock
         if (pieceLock) {      
             pieceLockAudio.play();            
             handlePieceLock();
         }
-    }
+    //} // temp commented
     
-    //  controls    
+    // controls    
     playerControl();     
     
     // draw
