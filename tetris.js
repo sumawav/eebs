@@ -14,7 +14,8 @@ var GRID = [];
 var STATE = {RUN:0,
              CLEAR_ANIMATION:1,
              CLEAR:2,
-             PAUSE:3};
+             PAUSE:3,
+             PIECELOCK:4};
 
 // GLOBALS
 var pieceLock = false;
@@ -528,6 +529,7 @@ function Piece (x, y, type, orientation) {
             //this.refreshPiece();
         } else {
             pieceLock = true;
+            currentState = STATE.PIECELOCK;
             pieceLockAudio.play();
         }
     },
@@ -822,8 +824,10 @@ function gameLoop () {
             }
         }  
     }
-    
+    }// STATE.RUN
+        
     // check for pieceLock
+    if (currentState == STATE.PIECELOCK) {
     if (pieceLock) {                              
         toClear = [];
         toClear = checkGridLines();
@@ -838,10 +842,15 @@ function gameLoop () {
         }
     } else {
         // controls    
-        playerControl();  
+        //playerControl();  
     }   
-       
-    }// STATE.RUN
+    
+    }// STATE.PIECELOCK   
+
+    if (currentState == STATE.RUN) {
+        playerControl(); 
+    }
+
  
     if (currentState == STATE.CLEAR_ANIMATION){
     // fade animation
