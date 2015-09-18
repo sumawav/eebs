@@ -269,6 +269,7 @@ function moveDown(y) {
             if (GRID[r][c].status) {
                 GRID[r][c].status = false;
                 GRID[r][c+1].status = true;
+                //GRID[r][c+1].color = GRID[r][c].color;
             }
         }
     } 
@@ -528,7 +529,7 @@ function Piece (x, y, type, orientation) {
             ++this.y;
             //this.refreshPiece();
         } else {
-            pieceLock = true;
+            //pieceLock = true;
             currentState = STATE.PIECELOCK;
             pieceLockAudio.play();
         }
@@ -765,7 +766,7 @@ function handlePieceLock() {
         clearLine(toClear[i]);
         moveDown(toClear[i]);
     }
-    pieceLock = false;
+    //pieceLock = false;
     altimeter();
     console.log("altitude: "+altitude);
     if (altitude === 0) { 
@@ -817,18 +818,18 @@ function gameLoop () {
     // auto piece drop and piecelock
     if (!gravityOff) {    
         // piece drop
-        if (!pieceLock) {
+        //if (!pieceLock) {
             if (lag > 300){
                 piece.drop();
                 lag = 0;
             }
-        }  
+        //}  
     }
     }// STATE.RUN
         
     // check for pieceLock
     if (currentState == STATE.PIECELOCK) {
-    if (pieceLock) {                              
+    //if (pieceLock) {                              
         toClear = [];
         toClear = checkGridLines();
         
@@ -840,10 +841,10 @@ function gameLoop () {
             //handlePieceLock();
             currentState = STATE.CLEAR;
         }
-    } else {
+    //} else {
         // controls    
         //playerControl();  
-    }   
+    //}   
     
     }// STATE.PIECELOCK   
 
