@@ -48,6 +48,7 @@ var shiftRAudio;
 var moveAudio;
 var pieceLockAudio;
 var clearLineAudio;
+var moveDownAudio;
 
 // event listeners
 document.addEventListener("keydown", keyDownHandler, false);
@@ -70,7 +71,8 @@ function initAudio() {
     shiftRAudio = new sFO("audio/shift3.wav", 3);
     moveAudio = new sFO("audio/move2.wav", 3);    
     pieceLockAudio = new sFO("audio/pieceLock4.wav", 2);
-    clearLineAudio = new sFO("audio/clearLine.wav", 1);
+    clearLineAudio = new sFO("audio/clearLine2.wav", 1);
+    moveDownAudio = new sFO("audio/moveDown2.wav", 1);
 }
 
 // sound effect object
@@ -830,6 +832,7 @@ function gameLoop () {
         
         if (toClear.length) {
             console.log("lines to clear: "+toClear.length);
+            clearLineAudio.play();
             currentState = STATE.CLEAR_ANIMATION;
         } else { 
             //handlePieceLock();
@@ -844,8 +847,10 @@ function gameLoop () {
  
     if (currentState == STATE.CLEAR_ANIMATION){
     // fade animation
-    if (fadeLine(toClear, 0.02) )
+    if (fadeLine(toClear, 0.04) ) {
         currentState = STATE.CLEAR;
+        moveDownAudio.play();
+    }
     }// STATE.CLEAR_ANIMATION
     
     if (currentState == STATE.CLEAR) {
