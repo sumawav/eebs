@@ -16,6 +16,8 @@ var GRID = [];
 var pieceLock = false;
 var altitude = 20;
 var pause = false;
+var elapsed = 0;
+var flashOn = false;
 
 // BUTTONS
 var rightPressed = false;
@@ -34,7 +36,11 @@ var spacePressed = false;
 var spaceHeld = false;
 
 //sound effects
-var shiftAudio;
+var shiftLAudio;
+var shiftRAudio;
+var moveAudio;
+var pieceLockAudio;
+var clearLineAudio;
 
 // event listeners
 document.addEventListener("keydown", keyDownHandler, false);
@@ -45,23 +51,36 @@ document.addEventListener("keyup", keyUpHandler, false);
 for (var r=0; r<10; ++r) {
     GRID[r] = [];
     for (var c=0; c<20; ++c) {
-        GRID[r][c] = { status: false, color: "blue" };
+        GRID[r][c] = { status: false, 
+                       color: "blue",
+                       trans: 1 };
     } 
 }
 
-// init audio
+// initializes sound effects
 function initAudio() {
-    shiftAudio = new Audio("audio/shift.wav");
+    shiftLAudio = new sFO("audio/shift2.wav", 3);
+    shiftRAudio = new sFO("audio/shift3.wav", 3);
+    moveAudio = new sFO("audio/move2.wav", 3);    
+    pieceLockAudio = new sFO("audio/pieceLock4.wav", 2);
+    clearLineAudio = new sFO("audio/clearLine.wav", 1);
 }
 
-// play sound effects
-function sfx(id) {
-    switch(id) {
-        case 0:
-            shiftAudio.play();
-            break;
-        default:
+// sound effect object
+// creates n objects for each sound and cycles
+// through them for playback
+function sFO(fileName, n) {
+    this.carousel = [];
+    this.turn = 0;
+    for (var i=0; i < n; ++i) {
+        this.carousel[i] = new Audio(fileName);
     }
+    
+    this.play = function() {
+        this.turn = ++this.turn % this.carousel.length;
+        this.carousel[this.turn].play();
+    };
+
 }
 
 // key down handler
@@ -123,22 +142,28 @@ function keyUpHandler(e) {
 }
 
 // draws a block
-function drawBlock (r, c, color) {
+function drawBlock (r, c, color, transparency) {
     var x = r * BLOCK;
     var y = c * BLOCK;
-
+    
+    // set transparency
+    ctx.globalAlpha = transparency;
+    ctx.globalAlpha = ctx.globalAlpha || 1;
+    
+    // draw square
     ctx.beginPath();
     ctx.rect(x, y, BLOCK, BLOCK);
     ctx.fillStyle = color;
     ctx.fill();
     ctx.closePath();
     
+    // draw outline
     ctx.beginPath();
     ctx.rect(x, y, BLOCK, BLOCK);
     ctx.strokeStyle = "red";
     ctx.stroke();
-    ctx.closePath();    
-
+    ctx.closePath();   
+     
 }
 
 // draws walls for playing field
@@ -154,7 +179,7 @@ function drawGrid () {
     for (var r=0; r < 10; ++r) {
         for (var c=0; c < 20; ++c) {
             if ( GRID[r][c].status )
-                drawBlock(r+5 , c, GRID[r][c].color);
+                drawBlock(r+5 , c, GRID[r][c].color, GRID[r][c].trans);
         }
     }
 }
@@ -408,7 +433,7 @@ function getBlockColor (type) {
         case 4:
             return "yellow";
         case 5:
-            return "violet";
+            return "purple";
         case 6:
             return "green";                        
         default:
@@ -419,11 +444,11 @@ function getBlockColor (type) {
 
 // single piece object
 function Piece (x, y, type, orientation) {
-    this.x = x,
-    this.y = y,
-    this.type = type,
-    this.orientation = orientation,
-    this.oriNum = 0,
+    this.x = x;
+    this.y = y;
+    this.type = type;
+    this.orientation = orientation;
+    this.oriNum = 0;
     this.pieceGrid = [],
     this.pieceGridLen = 0,
     this.color,
@@ -435,8 +460,7 @@ function Piece (x, y, type, orientation) {
     this.color = getBlockColor(this.type);
 
     // spawn new piece
-    this.spawn = function () {
-        console.log("-----spawn-----");    
+    this.spawn = function () {   
         this.x = 3;
         this.y = -1
         this.type = Math.floor(Math.random()*7);
@@ -445,15 +469,14 @@ function Piece (x, y, type, orientation) {
         this.pieceGridLen = this.pieceGrid[0].length;        
         this.oriNum = getOrientationNum(this.type);    
         this.color = getBlockColor(this.type);           
-    }
+    };
     
     this.refreshPiece = function () {
         this.pieceGrid = getPieceGrid(this.type, this.orientation);
         this.pieceGridLen = this.pieceGrid[0].length;        
-    }
+    };
     
     this.draw = function() {
-        console.log("-----draw-----");
         for (var r=0; r < this.pieceGridLen; ++r) {
             for (var c=0; c < this.pieceGridLen; ++c) {
                 if (this.pieceGrid[r][c]) {
@@ -461,7 +484,7 @@ function Piece (x, y, type, orientation) {
                 }         
             }
         }
-    },
+    };
     
     this.clearGrid = function() {
         for (var r=0; r < this.pieceGridLen; ++r) {
@@ -475,18 +498,17 @@ function Piece (x, y, type, orientation) {
     
     this.drop = function() {  
         if (this.checkDown()) {
-            console.log("-----drop-----");
             this.clearGrid();
             ++this.y;
             //this.refreshPiece();
         } else {
-            console.log("-----pieceLock-----");
             pieceLock = true;
         }
     },
     
     this.left = function() {
         if (this.checkLeft()) {
+            moveAudio.play();
             this.clearGrid(this.x, this.y);
             --this.x;
         }
@@ -494,6 +516,7 @@ function Piece (x, y, type, orientation) {
 
     this.right = function() {
         if (this.checkRight()) {
+            moveAudio.play();
             this.clearGrid(this.x, this.y);
             ++this.x;
         }
@@ -587,6 +610,7 @@ function Piece (x, y, type, orientation) {
     
     this.rotateCW = function() {
         if ( this.checkRotation(false) ) {
+            shiftLAudio.play();
             this.orientation = ++this.orientation % this.oriNum;    //cycles through 0..oriNum
             console.log("rotate Right");
             this.clearGrid();
@@ -596,7 +620,7 @@ function Piece (x, y, type, orientation) {
 
     this.rotateCCW = function() {
         if ( this.checkRotation(true) ) {
-
+            shiftRAudio.play();
             --this.orientation;
             if (this.orientation < 0) this.orientation = this.oriNum-1;
             console.log("rotate Left");
@@ -607,8 +631,6 @@ function Piece (x, y, type, orientation) {
     
     this.checkRotation = function(direction) {
         var ori = this.orientation;
-        console.log(ori);
-        console.log(this.oriNum);
         var nextGrid = [];         
         if (direction === false) {  
             ori = ++ori % this.oriNum;    //cycles through 0..this.oriNum
@@ -617,11 +639,8 @@ function Piece (x, y, type, orientation) {
             --ori;       
             if (ori < 0) ori = this.oriNum-1;
         }
-        console.log(ori);
         nextGrid = getPieceGrid(this.type, ori);
 
-
-        
         for (var r=0; r < this.pieceGridLen; ++r) {
             for (var c=0; c < this.pieceGridLen; ++c) {
                 if ( (nextGrid[r][c]) && 
@@ -736,7 +755,7 @@ function altimeter () {
         }
     }
     altitude = alt;
-    console.log("altitude: "+altitude);
+    //console.log("altitude: "+altitude);
 }
 
 function drawGameOver () {
@@ -745,6 +764,7 @@ function drawGameOver () {
             setGrid(r, c, getBlockColor(Math.floor(Math.random()*7)) );
         }
     }
+    pause = true;
     console.log("GAME OVER");
     drawGrid();
     pressAnyKey();
@@ -759,7 +779,7 @@ function pressAnyKey() {
 function gameLoop () {
     var d = new Date();
     var current = d.getTime();
-    var elapsed = current - previous;
+    elapsed = current - previous;
     lag += elapsed;
     previous = current;
     
@@ -774,6 +794,7 @@ function gameLoop () {
         }                
         // check for pieceLock
         if (pieceLock) {      
+            pieceLockAudio.play();            
             handlePieceLock();
         }
     }
@@ -791,18 +812,20 @@ function gameLoop () {
 }
 
 
-var piece = new Piece(0, -1, 6, 0);
+var piece = new Piece(0, -1, 3, 0);
 
 //setGrid(5, 10);
 
 for (var i=1; i < 10; ++i) {
-    setGrid(i, 19, "orange");
+    setGrid(i, 19, "pink");
 }
 
 var d = new Date();
 var previous = d.getTime();
 var lag = 0;
 initAudio();
+
+
 altimeter();
 gameLoop();
 
