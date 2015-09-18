@@ -7,8 +7,8 @@ var canvas = document.getElementById("gl-canvas");
 var ctx = canvas.getContext("2d");
 
 // CONSTANTS
-var HEIGHT = canvas.height;
-var WIDTH = canvas.width;
+var HEIGHT = canvas.height; console.log("HEIGHT: "+HEIGHT);
+var WIDTH = canvas.width; console.log("WIDTH: "+WIDTH);
 var BLOCK = HEIGHT/20;
 var GRID = [];
 var STATE = {RUN:0,
@@ -252,7 +252,7 @@ function fadeLine(y, fade) {
             GRID[r][lines[c]].trans -= fade;
         }
     }
-    console.log("trans: "+GRID[0][lines[0]].trans);
+    //console.log("trans: "+GRID[0][lines[0]].trans);
     if (GRID[0][lines[0]].trans < 0)
         return true;
     else
@@ -754,8 +754,6 @@ function playerControl() {
     }
 
 }
-
-
 
 function handlePieceLock() {
     toClear = [];
