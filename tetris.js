@@ -11,13 +11,20 @@ var HEIGHT = canvas.height;
 var WIDTH = canvas.width;
 var BLOCK = HEIGHT/20;
 var GRID = [];
+var STATE = {RUN:0,
+             CLEAR_ANIMATION:1,
+             CLEAR:2,
+             PAUSE:3};
 
 // GLOBALS
 var pieceLock = false;
 var altitude = 20;
-var gravity = false;
+var gravityOff = false;
 var elapsed = 0;
 var flashOn = false;
+var clearAnim = false;
+var toClear = [];
+var currentState = STATE.RUN;
 
 // BUTTONS
 var rightPressed = false;
@@ -235,15 +242,20 @@ function clearLine(y) {
 }
 
 // fades a line
-function fadeLine(y) {
+function fadeLine(y, fade) {
     var lines = [];
     lines = y;
     for (var r=0; r < 10; ++r) {
         for (var c=0; c < lines.length; ++c) {
-            GRID[r][lines[c]].trans -= 0.01;
-             
+            GRID[r][lines[c]].trans -= fade;
         }
     }
+    console.log("trans: "+GRID[0][lines[0]].trans);
+    if (GRID[0][lines[0]].trans < 0)
+        return true;
+    else
+        return false;
+    
 }
 
 // moves all pieces down after line clears
@@ -514,6 +526,7 @@ function Piece (x, y, type, orientation) {
             //this.refreshPiece();
         } else {
             pieceLock = true;
+            pieceLockAudio.play();
         }
     },
     
@@ -728,10 +741,10 @@ function playerControl() {
     // spacebar
     if (spacePressed) {
         if (!spaceHeld) {
-            if (!gravity)
-                gravity = true;
+            if (!gravityOff)
+                gravityOff = true;
             else
-                gravity = false;
+                gravityOff = false;
             spaceHeld = true;
         }
     } else {
@@ -740,31 +753,19 @@ function playerControl() {
 
 }
 
-function handlePieceLock() {
-    var toClear = [];
-    toClear = checkGridLines();
-    for (var i = 0; i < toClear.length; ++i) {
-        clearLine(toClear[i]);
-        moveDown(toClear[i]);
-    }
-    pieceLock = false;
-    altimeter();
-    if (altitude === 0) { 
-        drawGameOver(); 
-    } else {
-        piece.spawn(); 
-    }
-}
 
-function OLD_handlePieceLock() {
-    var toClear = [];
+
+function handlePieceLock() {
+    toClear = [];
     toClear = checkGridLines();
+    //console.log("lines to clear: "+toClear.length);    
     for (var i = 0; i < toClear.length; ++i) {
         clearLine(toClear[i]);
         moveDown(toClear[i]);
     }
     pieceLock = false;
     altimeter();
+    console.log("altitude: "+altitude);
     if (altitude === 0) { 
         drawGameOver(); 
     } else {
@@ -791,7 +792,7 @@ function drawGameOver () {
             setGrid(r, c, getBlockColor(Math.floor(Math.random()*7)) );
         }
     }
-    gravity = true;
+    gravityOff = true;
     console.log("GAME OVER");
     drawGrid();
     pressAnyKey();
@@ -810,8 +811,9 @@ function gameLoop () {
     lag += elapsed;
     previous = current;
     
+    if (currentState == STATE.RUN) {
     // auto piece drop and piecelock
-    if (!gravity) {    
+    if (!gravityOff) {    
         // piece drop
         if (!pieceLock) {
             if (lag > 300){
@@ -819,16 +821,40 @@ function gameLoop () {
                 lag = 0;
             }
         }  
-    } //temporary             
-        // check for pieceLock
-        if (pieceLock) {      
-            pieceLockAudio.play();            
-            handlePieceLock();
-        }
-    //} // temp commented
+    }
     
-    // controls    
-    playerControl();     
+    // check for pieceLock
+    if (pieceLock) {                              
+        toClear = [];
+        toClear = checkGridLines();
+        
+        if (toClear.length) {
+            console.log("lines to clear: "+toClear.length);
+            currentState = STATE.CLEAR_ANIMATION;
+        } else { 
+            //handlePieceLock();
+            currentState = STATE.CLEAR;
+        }
+    } else {
+        // controls    
+        playerControl();  
+    }   
+       
+    }// STATE.RUN
+ 
+    if (currentState == STATE.CLEAR_ANIMATION){
+    // fade animation
+    if (fadeLine(toClear, 0.02) )
+        currentState = STATE.CLEAR;
+    }// STATE.CLEAR_ANIMATION
+    
+    if (currentState == STATE.CLEAR) {
+        handlePieceLock();
+        currentState = STATE.RUN;
+        
+    
+    }// STATE.CLEAR
+    
     
     // draw
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -855,6 +881,7 @@ initAudio();
 
 
 altimeter();
+currentState = STATE.RUN;
 gameLoop();
 
 
