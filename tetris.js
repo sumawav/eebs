@@ -269,7 +269,7 @@ function moveDown(y) {
             if (GRID[r][c].status) {
                 GRID[r][c].status = false;
                 GRID[r][c+1].status = true;
-                //GRID[r][c+1].color = GRID[r][c].color;
+                GRID[r][c+1].color = GRID[r][c].color;
             }
         }
     } 
@@ -815,21 +815,17 @@ function gameLoop () {
     previous = current;
     
     if (currentState == STATE.RUN) {
-    // auto piece drop and piecelock
-    if (!gravityOff) {    
-        // piece drop
-        //if (!pieceLock) {
-            if (lag > 300){
-                piece.drop();
-                lag = 0;
-            }
-        //}  
-    }
+
+        if (lag > 800 && !gravityOff){
+            piece.drop();
+            lag = 0;
+        } else {
+            playerControl();
+        }
+    
     }// STATE.RUN
         
-    // check for pieceLock
-    if (currentState == STATE.PIECELOCK) {
-    //if (pieceLock) {                              
+    if (currentState == STATE.PIECELOCK) {                            
         toClear = [];
         toClear = checkGridLines();
         
@@ -838,20 +834,9 @@ function gameLoop () {
             clearLineAudio.play();
             currentState = STATE.CLEAR_ANIMATION;
         } else { 
-            //handlePieceLock();
             currentState = STATE.CLEAR;
         }
-    //} else {
-        // controls    
-        //playerControl();  
-    //}   
-    
     }// STATE.PIECELOCK   
-
-    if (currentState == STATE.RUN) {
-        playerControl(); 
-    }
-
  
     if (currentState == STATE.CLEAR_ANIMATION){
     // fade animation
@@ -864,8 +849,6 @@ function gameLoop () {
     if (currentState == STATE.CLEAR) {
         handlePieceLock();
         currentState = STATE.RUN;
-        
-    
     }// STATE.CLEAR
     
     
