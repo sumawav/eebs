@@ -27,6 +27,7 @@ var clearAnim = false;
 var toClear = [];
 var currentState = STATE.RUN;
 var score = 0;
+var nextPiece = 0;
 
 // BUTTONS
 var rightPressed = false;
@@ -152,14 +153,6 @@ function keyUpHandler(e) {
     }      
 }
 
-// draws score
-function drawScore () {
-    ctx.font="20px Arial";
-    ctx.fillStyle="#FF0000";
-    ctx.fillText("SCORE", WIDTH-90, 20); 
-    ctx.fillText(score, WIDTH-90, 40);
-}
-
 // draws a block
 function drawBlock (r, c, color, transparency) {
     var x = r * BLOCK;
@@ -190,6 +183,33 @@ function drawWalls () {
         for (var c = 0; c < 20; ++c)
             drawBlock(r, c, "gray");
     }
+}
+
+// draws next piece
+function drawNextPiece() {
+    pieceGrid = [];
+    pieceGrid = getPieceGrid(nextPiece, 0); 
+    pieceColor = getBlockColor(nextPiece);
+    ctx.font="20px Arial";
+    ctx.fillStyle="#FF0000";
+    ctx.fillText("NEXT", WIDTH-80, 20);     
+    
+    for (var r=0; r < pieceGrid.length; ++r) {
+        for (var c=0; c < pieceGrid.length; ++c) {
+            if (this.pieceGrid[r][c]) {
+                drawBlock(16+r, c, pieceColor);   
+            }         
+        }
+    }
+
+}
+
+// draws score
+function drawScore () {
+    ctx.font="20px Arial";
+    ctx.fillStyle="#FF0000";
+    ctx.fillText("SCORE", 10, 20); 
+    ctx.fillText(score, 10, 40);
 }
 
 // draws all block in GRID
@@ -499,7 +519,8 @@ function Piece (x, y, type, orientation) {
     this.spawn = function () {   
         this.x = 3;
         this.y = -1
-        this.type = Math.floor(Math.random()*7);
+        this.type = nextPiece;
+        nextPiece = Math.floor(Math.random()*7);
         this.orientation = 0;
         this.pieceGrid = getPieceGrid(this.type, this.orientation); 
         this.pieceGridLen = this.pieceGrid[0].length;        
@@ -847,7 +868,7 @@ function gameLoop () {
     
     if (currentState == STATE.RUN) {
 
-        if (lag > 800 && !gravityOff){
+        if (lag > 400 && !gravityOff){
             piece.drop();
             lag = 0;
         } else {
@@ -887,6 +908,7 @@ function gameLoop () {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawWalls();
     drawScore(); 
+    drawNextPiece();
     piece.draw();
     drawGrid();  
      
@@ -895,7 +917,7 @@ function gameLoop () {
 }
 
 
-var piece = new Piece(0, -1, 3, 0);
+var piece = new Piece(0, -1, 1, 0);
 
 //setGrid(5, 10);
 
