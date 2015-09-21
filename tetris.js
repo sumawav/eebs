@@ -179,10 +179,15 @@ function drawBlock (r, c, color, transparency) {
 
 // draws walls for playing field
 function drawWalls () {
-    for (var r = 4; r < 16; r=r+11) {
-        for (var c = 0; c < 20; ++c)
-            drawBlock(r, c, "gray");
-    }
+
+    // draw background wall
+    ctx.globalAlpha = 1;
+    ctx.beginPath();
+    ctx.rect( (WIDTH/4), 0, (WIDTH/2), HEIGHT);
+    ctx.fillStyle = "gray";
+    ctx.fill();
+    ctx.closePath();    
+    
 }
 
 // draws next piece
