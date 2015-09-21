@@ -26,6 +26,7 @@ var flashOn = false;
 var clearAnim = false;
 var toClear = [];
 var currentState = STATE.RUN;
+var score = 0;
 
 // BUTTONS
 var rightPressed = false;
@@ -149,6 +150,14 @@ function keyUpHandler(e) {
     else if(e.keyCode == 32) {
         spacePressed = false;
     }      
+}
+
+// draws score
+function drawScore () {
+    ctx.font="20px Arial";
+    ctx.fillStyle="#FF0000";
+    ctx.fillText("SCORE", WIDTH-90, 20); 
+    ctx.fillText(score, WIDTH-90, 40);
 }
 
 // draws a block
@@ -758,10 +767,32 @@ function playerControl() {
 
 }
 
+function scoring(lines) {
+    switch(lines) {
+        case 1:
+            ++score;
+            break;
+        case 2:
+            score += 3;
+            break;
+        case 3:
+            score += 5;
+            break;
+        case 4:
+            score += 7;
+            break;
+        default:
+            break;
+    
+    }
+
+}
+
 function handlePieceLock() {
     toClear = [];
     toClear = checkGridLines();
-    //console.log("lines to clear: "+toClear.length);    
+    //console.log("lines to clear: "+toClear.length);   
+    scoring(toClear.length); 
     for (var i = 0; i < toClear.length; ++i) {
         clearLine(toClear[i]);
         moveDown(toClear[i]);
@@ -855,8 +886,10 @@ function gameLoop () {
     // draw
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawWalls();
+    drawScore(); 
     piece.draw();
-    drawGrid();    
+    drawGrid();  
+     
 
     requestAnimationFrame(gameLoop);
 }
