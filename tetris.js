@@ -29,6 +29,8 @@ var clearAnim = false;
 var toClear = [];
 var currentState = STATE.RUN;
 var score = 0;
+var level = 0;
+var linesCleared = 0;
 var nextPiece = 0;
 var lag = 0;
 
@@ -563,9 +565,7 @@ function Piece (x, y, type, orientation) {
         if (this.checkDown()) {
             this.clearGrid();
             ++this.y;
-            //this.refreshPiece();
         } else {
-            //pieceLock = true;
             currentState = STATE.PIECELOCK;
             pieceLockAudio.play();
         }
@@ -830,6 +830,7 @@ function handlePieceLock() {
     toClear = [];
     toClear = checkGridLines(); 
     scoring(toClear.length); 
+    lines += toClear.length;
     for (var i = 0; i < toClear.length; ++i) {
         clearLine(toClear[i]);
         moveDown(toClear[i]);
@@ -858,16 +859,7 @@ function drawGameOver () {
             setGrid(r, c, getBlockColor(Math.floor(Math.random()*7)) );
         }
     }
-    //gravityOff = true;
-    console.log("GAME OVER");
-    drawGrid();
-    pressAnyKey();
-    
-}
-
-function pressAnyKey() {
-    
-    console.log("Press Any Key");
+    drawGrid();    
 }
 
 function gameLoop () {
@@ -880,13 +872,13 @@ function gameLoop () {
     // STATE.INIT
     if (currentState == STATE.INIT) {
         score = 0;
+        lines = 0;
         nextPiece = Math.floor(Math.random()*7);        
         initGrid();
         altimeter();
         currentState = STATE.RUN;    
     }
-    
-    
+
     // STATE.RUN
     if (currentState == STATE.RUN) {
         if (lag > 400 && !gravityOff){
@@ -897,6 +889,7 @@ function gameLoop () {
         }
         piece.draw();
     }
+
     // STATE.PIECELOCK      
     if (currentState == STATE.PIECELOCK) {                            
         toClear = [];
@@ -913,6 +906,7 @@ function gameLoop () {
             currentState = STATE.CLEAR;
         }
     } 
+
     // STATE.CLEAR_ANIMATION
     if (currentState == STATE.CLEAR_ANIMATION){
         // fade animation
@@ -921,11 +915,13 @@ function gameLoop () {
             moveDownAudio.play();
         }
     }
+
     // STATE.CLEAR
     if (currentState == STATE.CLEAR) {
         handlePieceLock();
         currentState = STATE.RUN;
     }
+
     // STATE.GAMEOVER
     if (currentState == STATE.GAMEOVER) {
         drawGameOver();
@@ -943,7 +939,7 @@ function gameLoop () {
 }
 
 
-var piece = new Piece(0, -1, Math.floor(Math.random()*7), 0);
+var piece = new Piece(3, -1, Math.floor(Math.random()*7), 0);
 var d = new Date();
 var previous = d.getTime();
 initAudio();
