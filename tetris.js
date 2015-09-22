@@ -31,6 +31,7 @@ var currentState = STATE.RUN;
 var score = 0;
 var level = 0;
 var linesCleared = 0;
+var totalLines = 0;
 var nextPiece = 0;
 var lag = 0;
 
@@ -215,10 +216,27 @@ function drawNextPiece() {
 
 // draws score
 function drawScore () {
+    var x = 10;
+    var y = 25;
     ctx.font="20px Arial";
     ctx.fillStyle="#FF0000";
-    ctx.fillText("SCORE", 10, 20); 
-    ctx.fillText(score, 10, 40);
+    ctx.fillText("SCORE", x, y); 
+    ctx.fillText(score, x, y+20);
+    
+    ctx.font="20px Arial";
+    ctx.fillStyle="#FF0000";
+    ctx.fillText("LEVEL", x, y+40); 
+    ctx.fillText(level, x, y+60);
+    
+    ctx.font="20px Arial";
+    ctx.fillStyle="#FF0000";
+    ctx.fillText("LINES", x, y+80); 
+    ctx.fillText(totalLines, x, y+100);        
+}
+
+// draws level
+function drawLevel () {
+
 }
 
 // draws all block in GRID
@@ -830,12 +848,13 @@ function handlePieceLock() {
     toClear = [];
     toClear = checkGridLines(); 
     scoring(toClear.length); 
-    lines += toClear.length;
+    linesCleared += toClear.length;
+    totalLines += toClear.length;
     console.log("lines : "+lines);
     console.log("level: "+level);
-    if (lines > 10) {
-        lines = lines % 10;
-        ++level;
+    if (linesCleared > 10) {
+        linesCleared = linesCleared % 10;
+        if (level < 9) {++level;}
     }
     for (var i = 0; i < toClear.length; ++i) {
         clearLine(toClear[i]);
@@ -878,7 +897,7 @@ function gameLoop () {
     if (currentState == STATE.INIT) {
         score = 0;
         lines = 0;
-        level = 1;
+        level = 0;
         nextPiece = Math.floor(Math.random()*7);        
         initGrid();
         altimeter();
@@ -939,6 +958,7 @@ function gameLoop () {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawWalls();
     drawScore(); 
+    drawLevel();
     drawNextPiece();
     drawGrid();  
      
