@@ -831,13 +831,18 @@ function handlePieceLock() {
     toClear = checkGridLines(); 
     scoring(toClear.length); 
     lines += toClear.length;
+    console.log("lines : "+lines);
+    console.log("level: "+level);
+    if (lines > 10) {
+        lines = lines % 10;
+        ++level;
+    }
     for (var i = 0; i < toClear.length; ++i) {
         clearLine(toClear[i]);
         moveDown(toClear[i]);
     }
     console.log("altitude: "+altitude);
     piece.spawn(); 
-
 }
 
 function altimeter () {
@@ -873,6 +878,7 @@ function gameLoop () {
     if (currentState == STATE.INIT) {
         score = 0;
         lines = 0;
+        level = 1;
         nextPiece = Math.floor(Math.random()*7);        
         initGrid();
         altimeter();
@@ -881,7 +887,8 @@ function gameLoop () {
 
     // STATE.RUN
     if (currentState == STATE.RUN) {
-        if (lag > 400 && !gravityOff){
+        var thresh = 1000 - (level*100);
+        if ((lag > thresh) && !gravityOff){
             piece.drop();
             lag = 0;
         } else {
