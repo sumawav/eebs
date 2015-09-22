@@ -823,6 +823,7 @@ function checkSpaceBar () {
         spaceHeld = false;
     }
 }
+
 function scoring(lines) {
     switch(lines) {
         case 1:
@@ -906,6 +907,7 @@ function gameLoop () {
         score = 0;
         lines = 0;
         level = 0;
+        linesCleared = 0;
         nextPiece = Math.floor(Math.random()*7);        
         initGrid();
         altimeter();
