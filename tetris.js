@@ -211,7 +211,6 @@ function drawNextPiece() {
             }         
         }
     }
-
 }
 
 // draws score
@@ -231,7 +230,7 @@ function drawScore () {
     ctx.font="20px Arial";
     ctx.fillStyle="#FF0000";
     ctx.fillText("LINES", x, y+80); 
-    ctx.fillText(totalLines, x, y+100);        
+    ctx.fillText(totalLines, x, y+100);
 }
 
 // draws level
@@ -880,10 +879,18 @@ function altimeter () {
 function drawGameOver () {
     for (var r=0; r < 10; ++r){
         for (var c=0; c < 20; ++c) {
-            setGrid(r, c, getBlockColor(Math.floor(Math.random()*7)) );
+            setGrid(r, c, getBlockColor(nextPiece) );
         }
     }
-    drawGrid();    
+    drawGrid();  
+    console.log("press space");
+    ctx.globalAlpha = 1;    
+    ctx.font="20px Arial";
+    ctx.fillStyle="#FF0000";
+    ctx.fillText("PRESS", 10, 145); 
+    ctx.fillText("SPACEBAR", 10, 165);     
+    
+
 }
 
 function gameLoop () {
@@ -948,11 +955,7 @@ function gameLoop () {
         currentState = STATE.RUN;
     }
 
-    // STATE.GAMEOVER
-    if (currentState == STATE.GAMEOVER) {
-        drawGameOver();
-        checkSpaceBar();
-    }    
+   
     
     // draw
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -961,6 +964,12 @@ function gameLoop () {
     drawLevel();
     drawNextPiece();
     drawGrid();  
+    
+    // STATE.GAMEOVER
+    if (currentState == STATE.GAMEOVER) {
+        drawGameOver();
+        checkSpaceBar();
+    }     
      
     requestAnimationFrame(gameLoop);
 }
