@@ -15,7 +15,9 @@ var STATE = {RUN:0,
              CLEAR_ANIMATION:1,
              CLEAR:2,
              PAUSE:3,
-             PIECELOCK:4};
+             PIECELOCK:4,
+             GAMEOVER:5,
+             INIT:6};
 
 // GLOBALS
 var pieceLock = false;
@@ -28,6 +30,7 @@ var toClear = [];
 var currentState = STATE.RUN;
 var score = 0;
 var nextPiece = 0;
+var lag = 0;
 
 // BUTTONS
 var rightPressed = false;
@@ -59,13 +62,15 @@ document.addEventListener("keyup", keyUpHandler, false);
 //document.addEventListener("mousemove", mouseMoveHandler, false);
 
 //init GRID
-for (var r=0; r<10; ++r) {
-    GRID[r] = [];
-    for (var c=0; c<20; ++c) {
-        GRID[r][c] = { status: false, 
-                       color: "blue",
-                       trans: 1 };
-    } 
+function initGrid() {
+    for (var r=0; r<10; ++r) {
+        GRID[r] = [];
+        for (var c=0; c<20; ++c) {
+            GRID[r][c] = { status: false, 
+                           color: "blue",
+                           trans: 1 };
+        } 
+    }
 }
 
 // initializes sound effects
@@ -177,17 +182,14 @@ function drawBlock (r, c, color, transparency) {
      
 }
 
-// draws walls for playing field
+// draw background wall of playing field
 function drawWalls () {
-
-    // draw background wall
     ctx.globalAlpha = 1;
     ctx.beginPath();
     ctx.rect( (WIDTH/4), 0, (WIDTH/2), HEIGHT);
     ctx.fillStyle = "gray";
     ctx.fill();
     ctx.closePath();    
-    
 }
 
 // draws next piece
@@ -502,7 +504,6 @@ function getBlockColor (type) {
     }
 }
 
-
 // single piece object
 function Piece (x, y, type, orientation) {
     this.x = x;
@@ -793,6 +794,17 @@ function playerControl() {
 
 }
 
+function checkSpaceBar () {
+    // spacebar
+    if (spacePressed) {
+        if (!spaceHeld) { 
+            currentState = STATE.INIT;       
+            spaceHeld = true;
+        }
+    } else {
+        spaceHeld = false;
+    }
+}
 function scoring(lines) {
     switch(lines) {
         case 1:
@@ -816,21 +828,15 @@ function scoring(lines) {
 
 function handlePieceLock() {
     toClear = [];
-    toClear = checkGridLines();
-    //console.log("lines to clear: "+toClear.length);   
+    toClear = checkGridLines(); 
     scoring(toClear.length); 
     for (var i = 0; i < toClear.length; ++i) {
         clearLine(toClear[i]);
         moveDown(toClear[i]);
     }
-    //pieceLock = false;
-    altimeter();
     console.log("altitude: "+altitude);
-    if (altitude === 0) { 
-        drawGameOver(); 
-    } else {
-        piece.spawn(); 
-    }
+    piece.spawn(); 
+
 }
 
 function altimeter () {
@@ -852,7 +858,7 @@ function drawGameOver () {
             setGrid(r, c, getBlockColor(Math.floor(Math.random()*7)) );
         }
     }
-    gravityOff = true;
+    //gravityOff = true;
     console.log("GAME OVER");
     drawGrid();
     pressAnyKey();
@@ -871,74 +877,79 @@ function gameLoop () {
     lag += elapsed;
     previous = current;
     
+    // STATE.INIT
+    if (currentState == STATE.INIT) {
+        score = 0;
+        nextPiece = Math.floor(Math.random()*7);        
+        initGrid();
+        altimeter();
+        currentState = STATE.RUN;    
+    }
+    
+    
+    // STATE.RUN
     if (currentState == STATE.RUN) {
-
         if (lag > 400 && !gravityOff){
             piece.drop();
             lag = 0;
         } else {
             playerControl();
         }
-    
-    }// STATE.RUN
-        
+        piece.draw();
+    }
+    // STATE.PIECELOCK      
     if (currentState == STATE.PIECELOCK) {                            
         toClear = [];
         toClear = checkGridLines();
-        
-        if (toClear.length) {
+        altimeter();
+        if (altitude === 0){
+            piece.clearGrid();
+            currentState =  STATE.GAMEOVER;
+        } else if (toClear.length) {
             console.log("lines to clear: "+toClear.length);
             clearLineAudio.play();
             currentState = STATE.CLEAR_ANIMATION;
         } else { 
             currentState = STATE.CLEAR;
         }
-    }// STATE.PIECELOCK   
- 
+    } 
+    // STATE.CLEAR_ANIMATION
     if (currentState == STATE.CLEAR_ANIMATION){
-    // fade animation
-    if (fadeLine(toClear, 0.04) ) {
-        currentState = STATE.CLEAR;
-        moveDownAudio.play();
+        // fade animation
+        if (fadeLine(toClear, 0.04) ) {
+            currentState = STATE.CLEAR;
+            moveDownAudio.play();
+        }
     }
-    }// STATE.CLEAR_ANIMATION
-    
+    // STATE.CLEAR
     if (currentState == STATE.CLEAR) {
         handlePieceLock();
         currentState = STATE.RUN;
-    }// STATE.CLEAR
-    
+    }
+    // STATE.GAMEOVER
+    if (currentState == STATE.GAMEOVER) {
+        drawGameOver();
+        checkSpaceBar();
+    }    
     
     // draw
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawWalls();
     drawScore(); 
     drawNextPiece();
-    piece.draw();
     drawGrid();  
      
-
     requestAnimationFrame(gameLoop);
 }
 
 
-var piece = new Piece(0, -1, 1, 0);
-
-//setGrid(5, 10);
-
-for (var i=1; i < 10; ++i) {
-    setGrid(i, 19, "pink");
-}
-
+var piece = new Piece(0, -1, Math.floor(Math.random()*7), 0);
 var d = new Date();
 var previous = d.getTime();
-var lag = 0;
 initAudio();
-
-
-altimeter();
-currentState = STATE.RUN;
+currentState = STATE.INIT;
 gameLoop();
+
 
 
 
