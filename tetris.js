@@ -84,6 +84,7 @@ function initAudio() {
     pieceLockAudio = new sFO("audio/pieceLock4.wav", 2);
     clearLineAudio = new sFO("audio/clearLine2.wav", 1);
     moveDownAudio = new sFO("audio/moveDown2.wav", 1);
+    levelUpAudio = new sFO("audio/levelUp3.wav", 1);
 }
 
 // sound effect object
@@ -853,7 +854,7 @@ function handlePieceLock() {
     console.log("level: "+level);
     if (linesCleared > 10) {
         linesCleared = linesCleared % 10;
-        if (level < 9) {++level;}
+        if (level < 9) {++level;levelUpAudio.play();}
     }
     for (var i = 0; i < toClear.length; ++i) {
         clearLine(toClear[i]);
