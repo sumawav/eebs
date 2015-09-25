@@ -180,7 +180,7 @@ function drawBlock (r, c, color, transparency) {
     // draw outline
     ctx.beginPath();
     ctx.rect(x, y, BLOCK, BLOCK);
-    ctx.strokeStyle = "red";
+    ctx.strokeStyle = "gray";
     ctx.stroke();
     ctx.closePath();   
      
