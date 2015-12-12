@@ -5,6 +5,7 @@
 // CANVAS
 var canvas = document.getElementById("gl-canvas");
 var ctx = canvas.getContext("2d");
+var pauseImg = new Image();
 
 // CONSTANTS
 var HEIGHT = canvas.height; console.log("HEIGHT: "+HEIGHT);
@@ -58,6 +59,7 @@ var moveAudio;
 var pieceLockAudio;
 var clearLineAudio;
 var moveDownAudio;
+var pauseAudio;
 
 // event listeners
 document.addEventListener("keydown", keyDownHandler, false);
@@ -78,6 +80,7 @@ function initGrid() {
 
 // initializes sound effects
 function initAudio() {
+    pauseAudio = new sFO("audio/pause.mp3", 3);
     shiftLAudio = new sFO("audio/shift2.wav", 3);
     shiftRAudio = new sFO("audio/shift3.wav", 3);
     moveAudio = new sFO("audio/move2.wav", 3);    
@@ -237,6 +240,15 @@ function drawScore () {
 // draws level
 function drawLevel () {
 
+}
+
+// draw pause screen
+function drawPauseScreen () {
+    ctx.globalAlpha = 1;
+    pause.src = "images/pause.png";
+    pause.onload = function () {
+        ctx.drawImage(pause, 10, 10);
+    }
 }
 
 // draws all block in GRID
@@ -800,10 +812,8 @@ function playerControl() {
     // spacebar
     if (spacePressed) {
         if (!spaceHeld) {
-            if (!gravityOff)
-                gravityOff = true;
-            else
-                gravityOff = false;
+            pauseAudio.play();
+            gravityOff = !gravityOff;
             spaceHeld = true;
         }
     } else {
