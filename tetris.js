@@ -1,4 +1,4 @@
-//SOUMA 
+//SOUMA
 //tetris.js
 //an implementation of tetris in javascript
 
@@ -69,10 +69,10 @@ function initGrid() {
     for (var r=0; r<10; ++r) {
         GRID[r] = [];
         for (var c=0; c<20; ++c) {
-            GRID[r][c] = { status: false, 
+            GRID[r][c] = { status: false,
                            color: "blue",
                            trans: 1 };
-        } 
+        }
     }
 }
 
@@ -80,7 +80,7 @@ function initGrid() {
 function initAudio() {
     shiftLAudio = new sFO("audio/shift2.wav", 3);
     shiftRAudio = new sFO("audio/shift3.wav", 3);
-    moveAudio = new sFO("audio/move2.wav", 3);    
+    moveAudio = new sFO("audio/move2.wav", 3);
     pieceLockAudio = new sFO("audio/pieceLock4.wav", 2);
     clearLineAudio = new sFO("audio/clearLine2.wav", 1);
     moveDownAudio = new sFO("audio/moveDown2.wav", 1);
@@ -96,7 +96,7 @@ function sFO(fileName, n) {
     for (var i=0; i < n; ++i) {
         this.carousel[i] = new Audio(fileName);
     }
-    
+
     this.play = function() {
         this.turn = ++this.turn % this.carousel.length;
         this.carousel[this.turn].play();
@@ -109,32 +109,39 @@ function keyDownHandler(e) {
     if(e.keyCode == 39) {
         rightPressed = true;
         //console.log("RIGHT");
+        e.preventDefault();
     }
     else if(e.keyCode == 37) {
         leftPressed = true;
         //console.log("LEFT");
+        e.preventDefault();
     }
     else if(e.keyCode == 38) {
         upPressed = true;
         //console.log("UP");
+        e.preventDefault();
     }
     else if(e.keyCode == 40) {
         downPressed = true;
         //console.log("DOWN");
-    }  
+        e.preventDefault();
+    }
     else if(e.keyCode == 90) {
         rotLeftPressed = true;
         //sfx(0);
         //console.log("z");
-    } 
+        e.preventDefault();
+    }
     else if(e.keyCode == 88) {
         rotRightPressed = true;
         //console.log("x");
-    }  
+        e.preventDefault();
+    }
     else if(e.keyCode == 32) {
         spacePressed = true;
         console.log("spacebar");
-    }         
+        e.preventDefault();
+    }
 }
 
 // key up handler
@@ -150,87 +157,88 @@ function keyUpHandler(e) {
     }
     else if(e.keyCode == 40) {
         downPressed = false;
-    } 
+    }
     else if(e.keyCode == 90) {
         rotLeftPressed = false;
-    } 
+    }
     else if(e.keyCode == 88) {
         rotRightPressed = false;
-    }  
+    }
     else if(e.keyCode == 32) {
         spacePressed = false;
-    }      
+    }
 }
 
 // draws a block
 function drawBlock (r, c, color, transparency) {
     var x = r * BLOCK;
     var y = c * BLOCK;
-    
+
     // set transparency
     ctx.globalAlpha = transparency || 1; // 1 if undefined
-    
+
     // draw square
     ctx.beginPath();
     ctx.rect(x, y, BLOCK, BLOCK);
     ctx.fillStyle = color;
     ctx.fill();
     ctx.closePath();
-    
+
     // draw outline
     ctx.beginPath();
     ctx.rect(x, y, BLOCK, BLOCK);
     ctx.strokeStyle = "gray";
     ctx.stroke();
-    ctx.closePath();   
-     
+    ctx.closePath();
+
 }
 
 // draw background wall of playing field
 function drawWalls () {
     ctx.globalAlpha = 1;
     ctx.beginPath();
-    ctx.rect( (WIDTH/4), 0, (WIDTH/2), HEIGHT);
-    ctx.fillStyle = "gray";
+    // ctx.rect( (WIDTH/4), 0, (WIDTH/2), HEIGHT);
+    ctx.rect( 0, 0, (WIDTH/2), HEIGHT);
+    ctx.fillStyle = "black";
     ctx.fill();
-    ctx.closePath();    
+    ctx.closePath();
 }
 
 // draws next piece
 function drawNextPiece() {
     pieceGrid = [];
-    pieceGrid = getPieceGrid(nextPiece, 0); 
+    pieceGrid = getPieceGrid(nextPiece, 0);
     pieceColor = getBlockColor(nextPiece);
     ctx.font="20px Arial";
     ctx.fillStyle="#FF0000";
-    ctx.fillText("NEXT", WIDTH-80, 20);     
-    
+    ctx.fillText("NEXT", WIDTH/2 + 5, 20);
+
     for (var r=0; r < pieceGrid.length; ++r) {
         for (var c=0; c < pieceGrid.length; ++c) {
             if (this.pieceGrid[r][c]) {
-                drawBlock(16+r, c, pieceColor);   
-            }         
+                drawBlock(10+r, c, pieceColor);
+            }
         }
     }
 }
 
 // draws score
 function drawScore () {
-    var x = 10;
-    var y = 25;
+    var x = WIDTH/2 + 5;
+    var y = 125;
     ctx.font="20px Arial";
     ctx.fillStyle="#FF0000";
-    ctx.fillText("SCORE", x, y); 
+    ctx.fillText("SCORE", x, y);
     ctx.fillText(score, x, y+20);
-    
+
     ctx.font="20px Arial";
     ctx.fillStyle="#FF0000";
-    ctx.fillText("LEVEL", x, y+40); 
+    ctx.fillText("LEVEL", x, y+40);
     ctx.fillText(level, x, y+60);
-    
+
     ctx.font="20px Arial";
     ctx.fillStyle="#FF0000";
-    ctx.fillText("LINES", x, y+80); 
+    ctx.fillText("LINES", x, y+80);
     ctx.fillText(totalLines, x, y+100);
 }
 
@@ -244,17 +252,18 @@ function drawGrid () {
     for (var r=0; r < 10; ++r) {
         for (var c=0; c < 20; ++c) {
             if ( GRID[r][c].status )
-                drawBlock(r+5 , c, GRID[r][c].color, GRID[r][c].trans);
+                // drawBlock(r+5 , c, GRID[r][c].color, GRID[r][c].trans);
+                drawBlock(r, c, GRID[r][c].color, GRID[r][c].trans);
         }
     }
 }
 
 // sets a block in GRID
-function setGrid (r, c, color) {   
+function setGrid (r, c, color) {
     if ( (r < 0) || (r > 9) || (c < 0) || (c > 19) ){
         console.log("WRITING OUT OF BOUNDS");
         console.log("r: "+r);
-        console.log("c: "+c);        
+        console.log("c: "+c);
     } else {
         GRID[r][c].status = true;
         GRID[r][c].color = color;
@@ -287,7 +296,7 @@ function checkGridLines () {
         if (!notFilled)
             out.push(c);
     }
-    
+
     return out;
 
 }
@@ -314,7 +323,7 @@ function fadeLine(y, fade) {
         return true;
     else
         return false;
-    
+
 }
 
 // moves all pieces down after line clears
@@ -328,7 +337,7 @@ function moveDown(y) {
                 GRID[r][c+1].color = GRID[r][c].color;
             }
         }
-    } 
+    }
 
 }
 
@@ -358,7 +367,7 @@ function getPieceGrid (type, orientation) {
                         [1, 1, 1],  // OXO
                         [0, 0, 1]]; // OXX
                 break;
-            default:                                             
+            default:
         }
         return grid;
     }
@@ -370,17 +379,17 @@ function getPieceGrid (type, orientation) {
                         [0, 1, 0, 0],   // XXXX
                         [0, 1, 0, 0],   // OOOO
                         [0, 1, 0, 0]];  // OOOO
-                break;            
+                break;
             case 1:
                 grid = [[0, 0, 0, 0],   // OOXO
                         [0, 0, 0, 0],   // OOXO
                         [1, 1, 1, 1],   // OOXO
                         [0, 0, 0, 0]];  // OOXO
-                break;   
-            default:     
+                break;
+            default:
         }
         return grid;
-    
+
     }
     // J piece
     if (type === 2){
@@ -405,10 +414,10 @@ function getPieceGrid (type, orientation) {
                         [1, 1, 1],  // OXO
                         [1, 0, 0]]; // OXO
                 break;
-            default:                                             
+            default:
         }
         return grid;
-    }  
+    }
     // T piece
     if (type === 3){
         switch (orientation) {
@@ -432,18 +441,18 @@ function getPieceGrid (type, orientation) {
                         [1, 1, 1],  // OXX
                         [0, 1, 0]]; // OXO
                 break;
-            default:                                             
+            default:
         }
         return grid;
-    }   
+    }
     // Square piece
     if (type === 4){
         grid = [[0, 0, 0, 0],  // OOOO
                 [0, 1, 1, 0],  // OXXO
                 [0, 1, 1, 0],  // OXXO
-                [0, 0, 0, 0]]; // OOOO 
+                [0, 0, 0, 0]]; // OOOO
         return grid;
-    }  
+    }
     // S piece
     if (type === 5){
         switch (orientation) {
@@ -457,10 +466,10 @@ function getPieceGrid (type, orientation) {
                         [0, 1, 1],  // XXO
                         [0, 0, 0]]; // OXO
                 break;
-            default:                                             
+            default:
         }
         return grid;
-    }      
+    }
     // Z piece
     if (type === 6){
         switch (orientation) {
@@ -474,10 +483,10 @@ function getPieceGrid (type, orientation) {
                         [0, 1, 1],  // OXX
                         [1, 1, 0]]; // OXO
                 break;
-            default:                                             
+            default:
         }
         return grid;
-    }       
+    }
 }
 
 // returns the number of orientations for a given type
@@ -488,15 +497,15 @@ function getOrientationNum(type) {
         case 1:
             return 2;
         case 2:
-            return 4;  
+            return 4;
         case 3:
-            return 4;  
+            return 4;
         case 4:
             return 1;
         case 5:
             return 2;
         case 6:
-            return 2;                        
+            return 2;
         default:
             return 0;
     }
@@ -510,15 +519,15 @@ function getBlockColor (type) {
         case 1:
             return "red";
         case 2:
-            return "blue";  
+            return "blue";
         case 3:
-            return "blue";  
+            return "blue";
         case 4:
             return "yellow";
         case 5:
             return "purple";
         case 6:
-            return "green";                        
+            return "green";
         default:
             return 0;
     }
@@ -542,44 +551,44 @@ function Piece (x, y, type, orientation) {
     this.color = getBlockColor(this.type);
 
     // spawn new piece
-    this.spawn = function () {   
+    this.spawn = function () {
         this.x = 3;
         this.y = -1
         this.type = nextPiece;
         nextPiece = Math.floor(Math.random()*7);
         this.orientation = 0;
-        this.pieceGrid = getPieceGrid(this.type, this.orientation); 
-        this.pieceGridLen = this.pieceGrid[0].length;        
-        this.oriNum = getOrientationNum(this.type);    
-        this.color = getBlockColor(this.type);           
+        this.pieceGrid = getPieceGrid(this.type, this.orientation);
+        this.pieceGridLen = this.pieceGrid[0].length;
+        this.oriNum = getOrientationNum(this.type);
+        this.color = getBlockColor(this.type);
     };
-    
+
     this.refreshPiece = function () {
         this.pieceGrid = getPieceGrid(this.type, this.orientation);
-        this.pieceGridLen = this.pieceGrid[0].length;        
+        this.pieceGridLen = this.pieceGrid[0].length;
     };
-    
+
     this.draw = function() {
         for (var r=0; r < this.pieceGridLen; ++r) {
             for (var c=0; c < this.pieceGridLen; ++c) {
                 if (this.pieceGrid[r][c]) {
-                    setGrid(this.x+r, this.y+c, this.color);   
-                }         
+                    setGrid(this.x+r, this.y+c, this.color);
+                }
             }
         }
     };
-    
+
     this.clearGrid = function() {
         for (var r=0; r < this.pieceGridLen; ++r) {
             for (var c=0; c < this.pieceGridLen; ++c) {
                 if (this.pieceGrid[r][c]) {
-                    clearBlock(this.x+r, this.y+c);   
-                }         
+                    clearBlock(this.x+r, this.y+c);
+                }
             }
-        }        
+        }
     },
-    
-    this.drop = function() {  
+
+    this.drop = function() {
         if (this.checkDown()) {
             this.clearGrid();
             ++this.y;
@@ -588,7 +597,7 @@ function Piece (x, y, type, orientation) {
             pieceLockAudio.play();
         }
     },
-    
+
     this.left = function() {
         if (this.checkLeft()) {
             moveAudio.play();
@@ -604,12 +613,12 @@ function Piece (x, y, type, orientation) {
             ++this.x;
         }
     },
-    
+
     this.up = function() {
         this.clearGrid(this.x, this.y);
         --this.y;
     },
-        
+
     this.checkDown = function() {
         for (var r=0; r < this.pieceGridLen; ++r) {
         for (var c=0; c < this.pieceGridLen; ++c) {
@@ -618,26 +627,26 @@ function Piece (x, y, type, orientation) {
                 if ( (this.y + c) === 19 ) {
                     console.log("collisionA");
                     return false;
-                    
+
                 } else if (c < this.pieceGridLen-1) {
                     if ( !(this.pieceGrid[r][c+1]) &&
-                          (getGrid(this.x+r, this.y+c+1)) ) 
+                          (getGrid(this.x+r, this.y+c+1)) )
                     {
                         console.log("collisionB");
-                        return false;                           
+                        return false;
                     }
                 } else if (c === this.pieceGridLen-1) {
                     if (getGrid(this.x+r, this.y+c+1)) {
                         console.log("collisionC");
                         return false;
                     }
-                
+
                 }
             }
         }}
-        return true;    
-    },     
-        
+        return true;
+    },
+
     this.checkRight = function() {
         for (var r=0; r < this.pieceGridLen; ++r) {
         for (var c=0; c < this.pieceGridLen; ++c) {
@@ -647,24 +656,24 @@ function Piece (x, y, type, orientation) {
                     return false;
                 } else if (r < this.pieceGridLen-1) {
                     if ( !(this.pieceGrid[r+1][c]) &&
-                          (getGrid(this.x+r+1, this.y+c)) ) 
+                          (getGrid(this.x+r+1, this.y+c)) )
                     {
                         console.log("collisionB");
-                        //I Stand With Ahmed 
-                        return false;                           
+                        //I Stand With Ahmed
+                        return false;
                     }
                 } else if (r === this.pieceGridLen-1) {
                     if (getGrid(this.x+r+1, this.y+c)) {
                         console.log("collisionC");
                         return false;
                     }
-                
+
                 }
             }
         }}
-        return true;    
-    },     
-        
+        return true;
+    },
+
     this.checkLeft = function() {
         for (var r=0; r < this.pieceGridLen; ++r) {
         for (var c=0; c < this.pieceGridLen; ++c) {
@@ -674,23 +683,23 @@ function Piece (x, y, type, orientation) {
                     return false;
                 } else if (r > 0) {
                     if ( !(this.pieceGrid[r-1][c]) &&
-                          (getGrid(this.x+r-1, this.y+c)) ) 
+                          (getGrid(this.x+r-1, this.y+c)) )
                     {
                         console.log("collision");
-                        return false;                           
+                        return false;
                     }
                 } else if (r === 0) {
                     if (getGrid(this.x+r-1, this.y+c)) {
                         console.log("collision");
                         return false;
                     }
-                
+
                 }
             }
         }}
-        return true;    
-    },    
-    
+        return true;
+    },
+
     this.rotateCW = function() {
         if ( this.checkRotation(false) ) {
             shiftLAudio.play();
@@ -698,8 +707,8 @@ function Piece (x, y, type, orientation) {
             console.log("rotate Right");
             this.clearGrid();
             this.refreshPiece();
-        }        
-    },    
+        }
+    },
 
     this.rotateCCW = function() {
         if ( this.checkRotation(true) ) {
@@ -708,42 +717,42 @@ function Piece (x, y, type, orientation) {
             if (this.orientation < 0) this.orientation = this.oriNum-1;
             console.log("rotate Left");
             this.clearGrid();
-            this.refreshPiece();   
-        }     
+            this.refreshPiece();
+        }
     },
-    
+
     this.checkRotation = function(direction) {
         var ori = this.orientation;
-        var nextGrid = [];         
-        if (direction === false) {  
+        var nextGrid = [];
+        if (direction === false) {
             ori = ++ori % this.oriNum;    //cycles through 0..this.oriNum
         }
         if (direction === true) {
-            --ori;       
+            --ori;
             if (ori < 0) ori = this.oriNum-1;
         }
         nextGrid = getPieceGrid(this.type, ori);
 
         for (var r=0; r < this.pieceGridLen; ++r) {
             for (var c=0; c < this.pieceGridLen; ++c) {
-                if ( (nextGrid[r][c]) && 
-                     (!this.pieceGrid[r][c]) && 
-                     (getGrid(this.x+r, this.y+c)) ) 
+                if ( (nextGrid[r][c]) &&
+                     (!this.pieceGrid[r][c]) &&
+                     (getGrid(this.x+r, this.y+c)) )
                 {
                     console.log("collision");
-                    return false;                
-                }                    
+                    return false;
+                }
             }
         }
         //sfx(0);
         return true;
-    }   
-    
+    }
+
 }
 
 function playerControl() {
     // controls
-    
+
     // keyboard right
     if (rightPressed) {
         if (!rightHeld) {
@@ -761,7 +770,7 @@ function playerControl() {
         }
     } else {
         leftHeld = false;
-    } 
+    }
     // keyboard down
     if (downPressed) {
         if (!downHeld) {
@@ -777,8 +786,8 @@ function playerControl() {
             upHeld = true;
     } else {
         upHeld = false;
-    } 
-    // Z key   
+    }
+    // Z key
     if (rotLeftPressed) {
         if (!rotLeftHeld) {
             //sfx(0);
@@ -796,7 +805,7 @@ function playerControl() {
         }
     } else {
         rotRightHeld = false;
-    }    
+    }
     // spacebar
     if (spacePressed) {
         if (!spaceHeld) {
@@ -815,8 +824,8 @@ function playerControl() {
 function checkSpaceBar () {
     // spacebar
     if (spacePressed) {
-        if (!spaceHeld) { 
-            currentState = STATE.INIT;       
+        if (!spaceHeld) {
+            currentState = STATE.INIT;
             spaceHeld = true;
         }
     } else {
@@ -840,15 +849,15 @@ function scoring(lines) {
             break;
         default:
             break;
-    
+
     }
 
 }
 
 function handlePieceLock() {
     toClear = [];
-    toClear = checkGridLines(); 
-    scoring(toClear.length); 
+    toClear = checkGridLines();
+    scoring(toClear.length);
     linesCleared += toClear.length;
     totalLines += toClear.length;
     console.log("lines : "+lines);
@@ -862,7 +871,7 @@ function handlePieceLock() {
         moveDown(toClear[i]);
     }
     console.log("altitude: "+altitude);
-    piece.spawn(); 
+    piece.spawn();
 }
 
 function altimeter () {
@@ -871,7 +880,7 @@ function altimeter () {
         for (var c=0; c < 19; ++c) {
             if ( GRID[r][c].status && (c < alt) ) {
                  alt = c;
-            }   
+            }
         }
     }
     altitude = alt;
@@ -884,14 +893,14 @@ function drawGameOver () {
             setGrid(r, c, getBlockColor(nextPiece) );
         }
     }
-    drawGrid();  
+    drawGrid();
     console.log("press space");
-    ctx.globalAlpha = 1;    
+    ctx.globalAlpha = 1;
     ctx.font="20px Arial";
     ctx.fillStyle="#FF0000";
-    ctx.fillText("PRESS", 10, 145); 
-    ctx.fillText("SPACEBAR", 10, 165);     
-    
+    ctx.fillText("PRESS", 10, 145);
+    ctx.fillText("SPACEBAR", 10, 165);
+
 
 }
 
@@ -901,7 +910,7 @@ function gameLoop () {
     elapsed = current - previous;
     lag += elapsed;
     previous = current;
-    
+
     // STATE.INIT
     if (currentState == STATE.INIT) {
         score = 0;
@@ -909,10 +918,10 @@ function gameLoop () {
         level = 0;
         linesCleared = 0;
         totalLines = 0;
-        nextPiece = Math.floor(Math.random()*7);        
+        nextPiece = Math.floor(Math.random()*7);
         initGrid();
         altimeter();
-        currentState = STATE.RUN;    
+        currentState = STATE.RUN;
     }
 
     // STATE.RUN
@@ -927,8 +936,8 @@ function gameLoop () {
         piece.draw();
     }
 
-    // STATE.PIECELOCK      
-    if (currentState == STATE.PIECELOCK) {                            
+    // STATE.PIECELOCK
+    if (currentState == STATE.PIECELOCK) {
         toClear = [];
         toClear = checkGridLines();
         altimeter();
@@ -939,10 +948,10 @@ function gameLoop () {
             console.log("lines to clear: "+toClear.length);
             clearLineAudio.play();
             currentState = STATE.CLEAR_ANIMATION;
-        } else { 
+        } else {
             currentState = STATE.CLEAR;
         }
-    } 
+    }
 
     // STATE.CLEAR_ANIMATION
     if (currentState == STATE.CLEAR_ANIMATION){
@@ -959,22 +968,22 @@ function gameLoop () {
         currentState = STATE.RUN;
     }
 
-   
-    
+
+
     // draw
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawWalls();
-    drawScore(); 
+    drawScore();
     drawLevel();
     drawNextPiece();
-    drawGrid();  
-    
+    drawGrid();
+
     // STATE.GAMEOVER
     if (currentState == STATE.GAMEOVER) {
         drawGameOver();
         checkSpaceBar();
-    }     
-     
+    }
+
     requestAnimationFrame(gameLoop);
 }
 
@@ -985,10 +994,3 @@ var previous = d.getTime();
 initAudio();
 currentState = STATE.INIT;
 gameLoop();
-
-
-
-
-
-
-

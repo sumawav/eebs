@@ -1,6 +1,6 @@
 body {
     background-color: #000000;
-    text-color: 
+    text-color:
 }
 
 * {
@@ -25,10 +25,11 @@ body {
     display: table-cell;
 }
 
-#newShape {
+.newShape {
     border-radius: 25px;
-    background: #00CCCC;
-    padding: 20px; 
+    background: #FFCCCC;
+    padding: 20px;
+    margin: 20px;
     width: 220px;
     height: 150px;
 }
@@ -37,4 +38,11 @@ body {
     vertical-align: bottom;
 
 
+}
+
+.DEBUG{
+  /*background-color: gray;*/
+  -webkit-box-shadow:inset 0px 0px 0px 5px #f00;
+  -moz-box-shadow:inset 0px 0px 0px 5px #f00;
+  box-shadow:inset 0px 0px 0px 5px #f00;
 }
