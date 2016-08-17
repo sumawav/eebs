@@ -34,6 +34,7 @@ var linesCleared = 0;
 var totalLines = 0;
 var nextPiece = 0;
 var lag = 0;
+var spawnDropLock = false;
 
 // BUTTONS
 var rightPressed = false;
@@ -198,8 +199,8 @@ function drawWalls () {
     ctx.globalAlpha = 1;
     ctx.beginPath();
     // ctx.rect( (WIDTH/4), 0, (WIDTH/2), HEIGHT);
-    ctx.rect( 0, 0, (WIDTH/2), HEIGHT);
-    ctx.fillStyle = "black";
+    ctx.rect( 0, 0, BLOCK * 10, HEIGHT);
+    ctx.fillStyle = "gray";
     ctx.fill();
     ctx.closePath();
 }
@@ -207,14 +208,15 @@ function drawWalls () {
 // draws next piece
 function drawNextPiece() {
     pieceGrid = [];
-    pieceGrid = getPieceGrid(nextPiece, 0);
+    var orientation = 0;
+    pieceGrid = getPieceGrid(nextPiece, orientation);
     pieceColor = getBlockColor(nextPiece);
     ctx.font="20px Arial";
     ctx.fillStyle="#FF0000";
-    ctx.fillText("NEXT", WIDTH/2 + 5, 20);
+    ctx.fillText("NEXT", BLOCK * 10, 20);
 
-    for (var r=0; r < pieceGrid.length; ++r) {
-        for (var c=0; c < pieceGrid.length; ++c) {
+    for (var r=0; r < this.pieceGrid.length; ++r) {
+        for (var c=0; c < this.pieceGrid.length; ++c) {
             if (this.pieceGrid[r][c]) {
                 drawBlock(10+r, c, pieceColor);
             }
@@ -224,7 +226,7 @@ function drawNextPiece() {
 
 // draws score
 function drawScore () {
-    var x = WIDTH/2 + 5;
+    var x = BLOCK * 10;
     var y = 125;
     ctx.font="20px Arial";
     ctx.fillStyle="#FF0000";
@@ -260,27 +262,34 @@ function drawGrid () {
 
 // sets a block in GRID
 function setGrid (r, c, color) {
-    if ( (r < 0) || (r > 9) || (c < 0) || (c > 19) ){
+    if ( (r < 0) || (r > 9) || (c < -1) || (c > 19) ){
         console.log("WRITING OUT OF BOUNDS");
         console.log("r: "+r);
         console.log("c: "+c);
     } else {
+      if (c >= 0) {
         GRID[r][c].status = true;
         GRID[r][c].color = color;
+      }
     }
 }
 
 // clears a block in GRID
 function clearBlock (r, c) {
+  if(c > -1) {
     GRID[r][c].status = false;
+  }
 }
 
 // returns status of block in GRID
 function getGrid (r, c) {
-    if ( (r < 0) || (r > 9) || (c > 19) || (c < 0) )
+    if ( (r < 0) || (r > 9) || (c > 19) || (c < -1) )
         return true;
-    else
-        return GRID[r][c].status;
+    else {
+      if (c < 0) { return false;}
+      return GRID[r][c].status;
+    }
+
 }
 
 // returns y indices of filled lines
@@ -552,6 +561,8 @@ function Piece (x, y, type, orientation) {
 
     // spawn new piece
     this.spawn = function () {
+
+        spawnDropLock = true;
         this.x = 3;
         this.y = -1
         this.type = nextPiece;
@@ -733,8 +744,11 @@ function Piece (x, y, type, orientation) {
         }
         nextGrid = getPieceGrid(this.type, ori);
 
+console.log("nextGrid: " + nextGrid);
+
         for (var r=0; r < this.pieceGridLen; ++r) {
             for (var c=0; c < this.pieceGridLen; ++c) {
+console.log("getGrid: " + getGrid(this.x+r, this.y+c));
                 if ( (nextGrid[r][c]) &&
                      (!this.pieceGrid[r][c]) &&
                      (getGrid(this.x+r, this.y+c)) )
@@ -782,10 +796,13 @@ function playerControl() {
     }
     // keyboard up (fast drop)
     if (upPressed) {
-            piece.drop();
-            upHeld = true;
+      if (!spawnDropLock) {
+        piece.drop();
+        upHeld = true;
+      }
     } else {
         upHeld = false;
+        spawnDropLock = false;
     }
     // Z key
     if (rotLeftPressed) {
