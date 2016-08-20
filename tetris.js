@@ -194,13 +194,23 @@ function drawBlock (r, c, color, transparency) {
 
 }
 
+// draws background
+function drawBG() {
+  ctx.globalAlpha = 1;
+  ctx.beginPath();
+  ctx.rect(0, 0, WIDTH, HEIGHT);
+  ctx.fillStyle = "blue";
+  ctx.fill();
+  ctx.closePath();
+}
+
 // draw background wall of playing field
 function drawWalls () {
     ctx.globalAlpha = 1;
     ctx.beginPath();
     // ctx.rect( (WIDTH/4), 0, (WIDTH/2), HEIGHT);
     ctx.rect( 0, 0, BLOCK * 10, HEIGHT);
-    ctx.fillStyle = "gray";
+    ctx.fillStyle = "black";
     ctx.fill();
     ctx.closePath();
 }
@@ -989,6 +999,7 @@ function gameLoop () {
 
     // draw
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBG();
     drawWalls();
     drawScore();
     drawLevel();
