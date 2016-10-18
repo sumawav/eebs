@@ -60,6 +60,26 @@ var pieceLockAudio;
 var clearLineAudio;
 var moveDownAudio;
 
+// colors
+var color = {
+  black:      "#000000",
+  darkBlue:  "#1D2B53",
+  darkPurple:"#7E2553",
+  darkGreen:  "#008751",
+  brown:      "#AB5236",
+  darkGray:  "#5F574F",
+  lightGray:  "#C2C3C7",
+  white:      "#FFF1E8",
+  red:        "#FF004D",
+  orange:      "#FFA300",
+  yellow:      "#FFEC27",
+  green:      "#00E436",
+  blue:        "#29ADFF",
+  indigo:      "#83769C",
+  pink:        "#FF77A8",
+  peach:      "#FFCCAA"
+}
+
 // event listeners
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
@@ -71,7 +91,7 @@ function initGrid() {
         GRID[r] = [];
         for (var c=0; c<20; ++c) {
             GRID[r][c] = { status: false,
-                           color: "blue",
+                           color: color.blue,
                            trans: 1 };
         }
     }
@@ -188,7 +208,7 @@ function drawBlock (r, c, color, transparency) {
     // draw outline
     ctx.beginPath();
     ctx.rect(x, y, BLOCK, BLOCK);
-    ctx.strokeStyle = "gray";
+    ctx.strokeStyle = color.black;
     ctx.stroke();
     ctx.closePath();
 
@@ -199,7 +219,7 @@ function drawBG() {
   ctx.globalAlpha = 1;
   ctx.beginPath();
   ctx.rect(0, 0, WIDTH, HEIGHT);
-  ctx.fillStyle = "blue";
+  ctx.fillStyle = color.darkGray;
   ctx.fill();
   ctx.closePath();
 }
@@ -210,7 +230,7 @@ function drawWalls () {
     ctx.beginPath();
     // ctx.rect( (WIDTH/4), 0, (WIDTH/2), HEIGHT);
     ctx.rect( 0, 0, BLOCK * 10, HEIGHT);
-    ctx.fillStyle = "black";
+    ctx.fillStyle = color.lightGray;
     ctx.fill();
     ctx.closePath();
 }
@@ -221,8 +241,8 @@ function drawNextPiece() {
     var orientation = 0;
     pieceGrid = getPieceGrid(nextPiece, orientation);
     pieceColor = getBlockColor(nextPiece);
-    ctx.font="20px Arial";
-    ctx.fillStyle="#FF0000";
+    ctx.font = "20px Arial";
+    ctx.fillStyle = color.red;
     ctx.fillText("NEXT", BLOCK * 10, 20);
 
     for (var r=0; r < this.pieceGrid.length; ++r) {
@@ -239,17 +259,17 @@ function drawScore () {
     var x = BLOCK * 10;
     var y = 125;
     ctx.font="20px Arial";
-    ctx.fillStyle="#FF0000";
+    ctx.fillStyle = color.red;
     ctx.fillText("SCORE", x, y);
     ctx.fillText(score, x, y+20);
 
     ctx.font="20px Arial";
-    ctx.fillStyle="#FF0000";
+    ctx.fillStyle = color.red;
     ctx.fillText("LEVEL", x, y+40);
     ctx.fillText(level, x, y+60);
 
     ctx.font="20px Arial";
-    ctx.fillStyle="#FF0000";
+    ctx.fillStyle = color.red;
     ctx.fillText("LINES", x, y+80);
     ctx.fillText(totalLines, x, y+100);
 }
@@ -534,19 +554,19 @@ function getOrientationNum(type) {
 function getBlockColor (type) {
     switch(type) {
         case 0:
-            return "orange";
+            return color.orange;
         case 1:
-            return "red";
+            return color.red;
         case 2:
-            return "blue";
+            return color.blue;
         case 3:
-            return "blue";
+            return color.peach;
         case 4:
-            return "yellow";
+            return color.yellow;
         case 5:
-            return "purple";
+            return color.indigo;
         case 6:
-            return "green";
+            return color.green;
         default:
             return 0;
     }
